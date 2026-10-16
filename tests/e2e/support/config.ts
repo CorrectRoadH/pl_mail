@@ -170,9 +170,21 @@ export function seed(...tasks: string[]): void {
  * `--pending-onboarding` leaves the setup wizard unfinished; everything else
  * gets it marked complete, because the wizard opens over a backdrop that
  * swallows every click.
+ *
+ * `stretched` stores the password the way an account that has moved over to
+ * browser-side stretching holds it; without it the account is on a hash of the
+ * password itself and its first sign-in moves it. `changeRequired` makes the
+ * password a one-time one, as an administrator's is.
  */
 export function seedUser(
-    options: { email?: string; password?: string; admin?: boolean; pendingOnboarding?: boolean } = {},
+    options: {
+        email?: string;
+        password?: string;
+        admin?: boolean;
+        pendingOnboarding?: boolean;
+        stretched?: boolean;
+        changeRequired?: boolean;
+    } = {},
 ): void {
     const email = options.email ?? TEST_USER.email;
     const password = options.password ?? TEST_USER.password;
@@ -182,6 +194,8 @@ export function seedUser(
             `app:test:seed-user --email=${email} --password=${password}`,
             options.admin ? "--admin" : "",
             options.pendingOnboarding ? "--pending-onboarding" : "",
+            options.stretched ? "--stretched" : "",
+            options.changeRequired ? "--change-required" : "",
         ]
             .filter(Boolean)
             .join(" "),
@@ -198,6 +212,14 @@ export function consoleCommand(command: string): void {
     execSync(`${CONSOLE} ${command}`, {
         stdio: "inherit",
         env: { ...process.env, APP_ENV: "test" },
+    });
+}
+
+/** A console command's output, for the few specs that read what the server holds. */
+export function consoleOutput(command: string): string {
+    return execSync(`${CONSOLE} ${command}`, {
+        env: { ...process.env, APP_ENV: "test" },
+        encoding: "utf8",
     });
 }
 

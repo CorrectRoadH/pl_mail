@@ -1,4 +1,4 @@
-<!-- translated-from: install/config-backup.md sha1:ce46015f6a5838fda8a25c3071eeda9b4a9b7b15 -->
+<!-- translated-from: install/config-backup.md sha1:eab772a6048d128eeb771f43ad022f3102a616d9 -->
 # Konfigurationssicherung
 
 Die *Konfiguration* einer Installation ist nicht dasselbe wie ihre *Daten*, und beide gehen auf
@@ -160,13 +160,19 @@ Pro Person:
 
 ```
 das Konto            Anzeigename, Passwort-HASH (nie ein Passwort — den Klartext
-                     gibt es nirgends), Administratorrolle, Sprache, Zeitzone,
+                     gibt es nirgends) mit Salt und Rundenzahl, mit denen der
+                     Browser es streckt, ob es ein Einmal-Passwort ist,
+                     Administratorrolle, Sprache, Zeitzone,
                      Erscheinungsbild, Oberflächen-Einstellungen,
                      Assistenten-Einstellungen, die Kategorien (Regeln oder
                      Assistent, ob das den Anbieter überstimmt, Tabs an oder
                      aus), Onboarding-Stand
 zweiter Faktor       das TOTP-Geheimnis, sein Bestätigungsdatum und die noch
                      ungenutzten Wiederherstellungscodes (bereits SHA-256-Digests)
+Schlüssel            der Schlüsselbund, Blob für Blob: User-Keys,
+                     Recovery-Kopien, Adress-Keys und die Adressen, denen sie
+                     dienen — alles unter dem Passwort der Person verpackt, also
+                     öffnet sich nichts davon ohne es
 App-Passwörter       Name, Hinweis und Hash je Zugangsdatum, mit lastUsedAt und
                      revokedAt. Sie sind es, die JMAP-Clients angemeldet halten
 Mailkonten           IMAP-/SMTP-Host, Port und Verschlüsselung, Benutzername,
