@@ -35,8 +35,10 @@ it closes. A release is a milestone with nothing left open, closed when it is ta
 one or more `area: …` (mail, calendar, gmail, outlook, imap, mobile, settings, install).
 Pull requests get their area labels from the files they touch
 (`.github/labeler.yml`), and a required check refuses a pull request that closes no issue —
-unless it is labelled `bug`, `chore` or `dependencies`. Contributors cannot label their own pull
-requests, so a bug fix without an issue waits for a maintainer to label it `bug`.
+unless it is labelled `bug`, `chore`, `dependencies` or `deployment`. `deployment` is for a milestone
+or release branch going to `main` (`milestone/v0.4.0`), whose pieces each closed their own issue on
+the way in. Contributors cannot label their own pull requests, so a bug fix without an issue waits
+for a maintainer to label it `bug`.
 
 **`main` is protected.** Everything reaches it through a pull request with green checks, the
 maintainers' own changes included, and is squash-merged. The production image follows `main`, so
@@ -916,7 +918,7 @@ php bin/mirror-wiki.php --check
 | `app:mail:wake-snoozed` | Return snoozed conversations whose time has come. Runs every minute |
 | `app:mail:release-held` | Show mail that has been held for the assistant longer than **Wait at most** allows. Runs every minute and finds nothing on an ordinary day — the live worker releases held mail itself. It is the backstop for that worker being down, and it warns when it has to act |
 | `app:calendar:materialise [--dry-run]` | Redraw the occurrences of recurring events whose horizon no longer reaches far enough. Runs nightly; without it a long-untouched series eventually runs out of dates |
-| `app:backfill [task]` | Run a one-off backfill over stored data; with no argument it lists the tasks and asks. The tasks that re-read mail (`events`, `insights`) cover the last 24 hours unless `--since` says otherwise (`7d`, `2026-09-01`, `all`). `events` re-runs calendar extraction, `proposals` re-reads mail for dates written in prose, `safe-html-table-links` restores links that were wrapped around a table and came out empty |
+| `app:backfill [task]` | Run a one-off backfill over stored data; with no argument it lists the tasks and asks. The tasks that re-read mail (`events`, `insights`) cover the last 24 hours unless `--since` says otherwise (`7d`, `2026-09-01`, `all`). `events` re-runs calendar extraction, `proposals` re-reads mail for dates written in prose, `safe-html-table-links` restores links that were wrapped around a table and came out empty, `safe-html-conditional-comments` removes Outlook's `<![endif]-->` from messages that show it as text, `repeated-headers` takes out the header block some IMAP servers repeated at the top of a message body |
 | `app:imap:idle <mailbox-id>` | Hold an IMAP IDLE connection for a single mailbox |
 | `app:imap:supervise` | Spawn and watch one `app:imap:idle` process per IDLE-enabled mailbox |
 | `app:imap:test [--account=ID]` | Test an IMAP connection and folder listing |
