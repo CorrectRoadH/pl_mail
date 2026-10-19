@@ -213,6 +213,59 @@ text: the plain-text part of the mail ended where it began, so the signature was
 an encrypted message's plain-text part quoted it with `>`. Mail already sent is unchanged. No schema
 change.
 
+**Reconnecting a service in the setup wizard no longer fails.** Opening the Integrations step for
+a service that was already connected and saving it again answered with an error page, because the
+step built a second connection with the same name instead of editing the first. It now edits the
+existing one, and a blank secret still keeps the stored one. The settings page had the same error
+when a second connection to a service (a work Nextcloud next to the home one) kept the default
+name; it now asks for another name instead. No schema change.
+[#216](https://github.com/karatektus/pl_mail/issues/216), by @phdelodder.
+
+**Inline images in a message show up again.** Pictures that a mail carries inside itself, such as
+a logo or the icons in a booking confirmation, rendered as empty boxes: the message body is shown in
+a sandbox that sends no session cookie, so each image was answered with a redirect to the login
+page. They now load through a signed link (`/mail/inline/{id}`) that only answers for an image of
+the message being read, and nothing that is not a picture. The link stops working after a day or
+two, so one that leaks through a forward or a log does not open the image for good; the message
+signs a fresh one each time it is shown. Images labelled `application/octet-stream` or
+`image/octet-stream` load the same way when their bytes are a picture. Messages already in the
+mailbox are fixed too, no backfill needed. No schema change.
+
+**Single sign-on can be the only way in.** A new setting under Admin → SSO, **Single sign-on only**
+(or `OIDC_DISABLE_PASSWORD_LOGIN=true` in the environment), hides the password form and makes the
+server refuse a password sign-in, so everybody comes in through the provider. It is in force only
+while a provider is set up, so a provider that was removed cannot leave an install with no way in,
+and the box can be ticked only by an administrator who has signed in through the provider
+themselves. If the provider is down, `php bin/console app:sso:allow-password-login` brings the form
+back. App passwords for mail clients and the phone apps, and sessions that are already open, are not
+affected. Off by default. Schema change: one boolean column on `oidc_config`, false for every
+existing install. [#169](https://github.com/karatektus/pl_mail/issues/169).
+
+**A deleted label no longer comes back after the next sync.** On a plain IMAP account, and for a
+folder on Outlook, deleting a label left its folder on the mail server, and the next sync made the
+label again. Deleting one now deletes the folder there too. When there is mail in it, the delete
+dialog first asks where that mail goes — Inbox, Archive, Trash or one of your other folders — moves
+it there, deletes the folder once the server says it is empty, and only then removes the label. This
+runs in the background and shows in the activity indicator, which names the folder it is waiting
+for; a folder that still holds mail on the server is never deleted, and a server that refuses the
+delete ends it at once with its reason. A folder still being imported is deleted only once its
+import has finished. A folder plMail creates on an IMAP server (an Archive or Trash it did not have
+yet) no longer shows as "Importing" in the activity indicator. Deleting an Outlook category never
+reached Outlook at all, and now does; labels nested under a Gmail label are deleted in Gmail with
+it. No schema change.
+[#40](https://github.com/karatektus/pl_mail/issues/40).
+
+**Inline images labelled `application/octet-stream` show up.** Many mailers do not say what an
+inline image is — they label it `application/octet-stream`, or `image/octet-stream`, which is not
+a registered type at all and is what Vaultwarden's notification mails put on their logo — and the
+attachment route served every such part as a download, so the image never appeared in the message. For those labels only, the file's own
+bytes now decide, held to the same allow-list as everything else: a PNG, JPEG, GIF or WebP is
+served inline, while SVG, HTML and anything unrecognised are still downloads. The image proxy
+already did this for unlabelled remote images and now shares the same check, so a remote image
+labelled `image/octet-stream` is now also identified from its bytes and served under its real
+type, rather than passed through under the label it came with. No schema change.
+Part of [#213](https://github.com/karatektus/pl_mail/issues/213).
+
 **A mail can go to Bcc recipients only.** Sending with nobody in To was refused with "Add at least
 one recipient before sending", even with addresses in Cc or Bcc: the window counted all three, but
 the server only counted To. It now counts all three as well. A mail with no recipient at all is

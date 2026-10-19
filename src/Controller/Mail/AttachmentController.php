@@ -97,8 +97,13 @@ final class AttachmentController extends AbstractController
 
         $absolutePath = $this->attachmentResolver->absolutePathFor($part);
         // A sealed part is an OpenPGP message, whatever the browser said the
-        // file was: served as what it is, and only to be downloaded.
-        $contentType  = true === $part->sealed ? 'application/octet-stream' : ($part->contentType ?? 'application/octet-stream');
+        // file was: served as what it is, and only to be downloaded. Otherwise
+        // a part labelled `application/octet-stream` or `image/octet-stream` is
+        // very often an inline image whose sender did not say so; the resolver
+        // lets the bytes decide for those labels only. See inlineTypeFor().
+        $contentType  = true === $part->sealed
+            ? 'application/octet-stream'
+            : ($this->attachmentResolver->inlineTypeFor($part, $absolutePath) ?? $part->contentType ?? 'application/octet-stream');
 
         // An allow-list, not a prefix test. `image/svg+xml` starts with
         // "image/" and executes script when loaded as a document, and the type

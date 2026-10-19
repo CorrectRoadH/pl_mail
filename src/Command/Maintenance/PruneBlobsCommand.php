@@ -39,24 +39,29 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  *   1. Expired staging uploads — rows (and files) for blobs a client uploaded
  *      but never attached to anything. RFC 8620 §6.1 lets the server expire
  *      these. Row-driven.
- *   2. Orphaned files — files under the three roots with no row pointing at
+ *   2. Orphaned files — files in the three stores with no row pointing at
  *      them. Filesystem-driven.
- *
- * ONLY THE PER-ACCOUNT DIRECTORIES of each root are swept: the numbered ones
- * its owner writes (`uploads/<account>/`, `attachments/<n>/…`,
- * `raw/<account>/…`). Other storages keep files beside them on the same
- * volumes — profile pictures in uploads/avatars/, signature images in
- * uploads/signatures/, backgrounds in uploads/backgrounds/, sealed messages
- * in raw/sealed/ — and no column of this command's names them. Walking the
- * whole root took every one of those for an orphan: a week after upload,
- * the Sunday run deleted them and removed their directories (#214). A
- * directory that is not a number is somebody else's, including one added
- * later, so the safe answer for it is to leave it alone.
  *
  * Both respect the same retention window, and the window is what makes the
  * second pass safe: every writer creates the file before committing the row,
  * so a file younger than the cutoff may simply be waiting for its INSERT.
  * A week of slack is many orders of magnitude more than that gap.
+ *
+ * The second pass only looks where the three writers write: the per-account
+ * trees, var/uploads/<account>/, var/attachments/<account>/ and
+ * var/raw/<account>/, and in them only files laid out the way the writer lays
+ * them out. The roots are shared volumes, and other owners keep files there
+ * that no column of ours names: profile pictures (uploads/avatars), signature
+ * images (uploads/signatures), appearance backgrounds (uploads/backgrounds),
+ * attachment thumbnails (attachments/thumbs). Until #214 the sweep walked the
+ * whole root, took those for orphans and deleted them every Sunday.
+ *
+ * The road not taken is a deny-list of those directories. It would have been
+ * a smaller diff, and it fails the same way the original did: the next owner
+ * who adds a directory under a root (sealed messages under raw/ are one) is
+ * swept until somebody remembers to extend the list. Here the default for a
+ * path nobody claimed is to leave it alone; a leaked file costs disk, a swept
+ * one costs somebody's data.
  */
 #[AsCommand(
     name: 'app:prune:blobs',
@@ -67,15 +72,28 @@ final class PruneBlobsCommand extends Command
     private const int DEFAULT_DAYS = 7;
 
     /**
-     * The roots this command sweeps. Which column references files in each is
+     * The roots this command sweeps, each with the shape of a path its writer
+     * produces, relative to the root. Which column references files in each is
      * the repositories' business — see referencedPaths().
      *
-     * @var list<string>
+     * The first segment is always the account id, so a directory under a root
+     * whose name is not a number is not ours and is never entered. The rest
+     * mirrors the writer exactly:
+     *
+     *   uploads      <account>/<32 hex>.blob              UploadStorage
+     *   attachments  <account>/<mailbox>/<uid>/<name>     AttachmentStorageHelper
+     *   raw          <account>/<id div 1000>/<id>.eml     RawMessageStorage
+     *
+     * A file inside an account tree that does not match is left alone too:
+     * if a writer ever changes its layout, the pattern here has to follow
+     * before anything in the new shape can be swept, not after.
+     *
+     * @var array<string, non-empty-string>
      */
     private const array STORES = [
-        'var/uploads',
-        'var/attachments',
-        'var/raw',
+        'var/uploads'     => '#^\d+/[0-9a-f]{32}\.blob$#',
+        'var/attachments' => '#^\d+/\d+/\d+/[^/]+$#',
+        'var/raw'         => '#^\d+/\d+/\d+\.eml$#',
     ];
 
     public function __construct(
@@ -127,8 +145,8 @@ final class PruneBlobsCommand extends Command
         }
 
         if (false === $input->getOption('skip-orphans')) {
-            foreach (self::STORES as $root) {
-                [$count, $size] = $this->sweepOrphans($io, $root, $cutoff, $dryRun);
+            foreach (self::STORES as $root => $layout) {
+                [$count, $size] = $this->sweepOrphans($io, $root, $layout, $cutoff, $dryRun);
                 $files += $count;
                 $bytes += $size;
             }
@@ -184,11 +202,13 @@ final class PruneBlobsCommand extends Command
     }
 
     /**
-     * Pass 2: files under $root that no row points at any more.
+     * Pass 2: files in $root's account trees that no row points at any more.
+     *
+     * @param non-empty-string $layout
      *
      * @return array{int, int} files, bytes
      */
-    private function sweepOrphans(SymfonyStyle $io, string $root, \DateTimeImmutable $cutoff, bool $dryRun): array
+    private function sweepOrphans(SymfonyStyle $io, string $root, string $layout, \DateTimeImmutable $cutoff, bool $dryRun): array
     {
         $absoluteRoot = $this->projectDir.'/'.$root;
 
@@ -203,31 +223,38 @@ final class PruneBlobsCommand extends Command
         $files = 0;
         $bytes = 0;
 
-        foreach ($this->ownedFiles($absoluteRoot) as $file) {
-            // A file younger than the cutoff may be one whose row has not been
-            // committed yet. Leave it for the next run.
-            if ($file->getMTime() >= $cutoff->getTimestamp()) {
-                continue;
-            }
+        $accounts = $this->accountDirectories($absoluteRoot);
 
-            $path = $root.'/'.$this->relativeTo($absoluteRoot, $file);
+        foreach ($accounts as $account) {
+            foreach ($this->walk($account) as $file) {
+                $relative = $this->relativeTo($absoluteRoot, $file);
 
-            if (true === isset($referenced[$path])) {
-                continue;
-            }
+                if (1 !== preg_match($layout, $relative)) {
+                    continue;
+                }
 
-            ++$files;
-            $bytes += $file->getSize();
+                // A file younger than the cutoff may be one whose row has not
+                // been committed yet. Leave it for the next run.
+                if ($file->getMTime() >= $cutoff->getTimestamp()) {
+                    continue;
+                }
 
-            if (false === $dryRun) {
-                @unlink($file->getPathname());
+                if (true === isset($referenced[$root.'/'.$relative])) {
+                    continue;
+                }
+
+                ++$files;
+                $bytes += $file->getSize();
+
+                if (false === $dryRun) {
+                    @unlink($file->getPathname());
+                }
             }
         }
 
         if (false === $dryRun && $files > 0) {
-            foreach ($this->ownedDirectories($absoluteRoot) as $directory) {
-                $this->removeEmptyDirectories($directory);
-                @rmdir($directory);
+            foreach ($accounts as $account) {
+                $this->removeEmptyDirectories($account);
             }
         }
 
@@ -261,38 +288,32 @@ final class PruneBlobsCommand extends Command
     }
 
     /**
-     * @return iterable<\SplFileInfo>
-     */
-    /**
-     * The numbered directories directly under $root: the ones the store's own
-     * writer makes, and the only ones this command may sweep. See the class
-     * comment and #214.
+     * The per-account directories directly under a root: the ones named by a
+     * number. Everything else at that level belongs to someone else.
      *
-     * @return list<string>
+     * @return list<string> absolute paths
      */
-    private function ownedDirectories(string $root): array
+    private function accountDirectories(string $root): array
     {
-        $directories = [];
+        $accounts = [];
 
-        foreach (new \FilesystemIterator($root, \FilesystemIterator::SKIP_DOTS) as $entry) {
-            if ($entry instanceof \SplFileInfo && true === $entry->isDir() && false === $entry->isLink() && 1 === preg_match('/^\d+$/', $entry->getFilename())) {
-                $directories[] = $entry->getPathname();
+        foreach (new \FilesystemIterator($root) as $entry) {
+            if (
+                $entry instanceof \SplFileInfo
+                && true === $entry->isDir()
+                && false === $entry->isLink()
+                && 1 === preg_match('/^\d+$/', $entry->getFilename())
+            ) {
+                $accounts[] = $entry->getPathname();
             }
         }
 
-        return $directories;
+        return $accounts;
     }
 
     /**
      * @return iterable<\SplFileInfo>
      */
-    private function ownedFiles(string $root): iterable
-    {
-        foreach ($this->ownedDirectories($root) as $directory) {
-            yield from $this->walk($directory);
-        }
-    }
-
     private function walk(string $directory): iterable
     {
         $iterator = new \RecursiveIteratorIterator(
@@ -316,6 +337,10 @@ final class PruneBlobsCommand extends Command
      * Attachments fan out one directory per message and raw messages one per
      * thousand ids, so a sweep leaves behind a tree of empty directories that
      * would otherwise never be collected.
+     *
+     * Called per account tree, never on a root, so another owner's directory
+     * that happens to be empty right now is not removed from under it. The
+     * account directory itself goes once it is empty; the writers recreate it.
      */
     private function removeEmptyDirectories(string $root): void
     {
@@ -329,6 +354,8 @@ final class PruneBlobsCommand extends Command
                 @rmdir($entry->getPathname());
             }
         }
+
+        @rmdir($root);
     }
 
     private function humanBytes(int $bytes): string
