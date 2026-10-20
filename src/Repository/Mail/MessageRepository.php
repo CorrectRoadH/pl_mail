@@ -3,6 +3,7 @@
 namespace App\Repository\Mail;
 
 use App\Domain\Enum\Mail\LabelRole;
+use App\Domain\Enum\Mail\SendFailure;
 use App\Domain\Enum\Mail\MailboxSpecialUse;
 use App\Domain\Helper\CalendarAttachment;
 use App\Entity\Mail\Account;
@@ -277,8 +278,13 @@ class MessageRepository extends ServiceEntityRepository
         $affected = $this->getEntityManager()->getConnection()->executeStatement(
             // The database's own clock, not PHP's: the claim is decided here,
             // so the timestamp that records it should be too.
+            // A warning left by an earlier send is lifted by this one: the
+            // draft is being sent again, and if this attempt fails too it is
+            // marked afresh (#125).
             'UPDATE message
-                SET send_claimed_at = LOCALTIMESTAMP
+                SET send_claimed_at = LOCALTIMESTAMP,
+                    send_failed_at = NULL,
+                    send_failure = NULL
               WHERE id = :id
                 AND cancelled = false
                 AND sent_at IS NULL
@@ -369,6 +375,93 @@ class MessageRepository extends ServiceEntityRepository
             'UPDATE message SET send_claimed_at = NULL WHERE id = :id AND sent_at IS NULL',
             ['id' => $messageId],
         );
+    }
+
+    /**
+     * Start the clock on a send that is being retried, if it is not running
+     * already, and say how long it has been running in seconds (#125).
+     *
+     * One statement for both, so two attempts racing each other cannot each
+     * start their own clock. The database's clock, as for the claim.
+     *
+     * Raw DBAL because that one statement is the point and DQL cannot write
+     * it: it has no `UPDATE … RETURNING`, and no `EXTRACT(EPOCH FROM …)` to
+     * turn the interval into seconds. Split into an UPDATE and a SELECT it
+     * would be two statements again, and the race back.
+     */
+    public function secondsRetryingSend(int $messageId): int
+    {
+        $elapsed = $this->getEntityManager()->getConnection()->fetchOne(
+            'UPDATE message
+                SET send_retrying_since = COALESCE(send_retrying_since, LOCALTIMESTAMP)
+              WHERE id = :id
+          RETURNING EXTRACT(EPOCH FROM LOCALTIMESTAMP - send_retrying_since)',
+            ['id' => $messageId],
+        );
+
+        return false === $elapsed ? 0 : (int) $elapsed;
+    }
+
+    /**
+     * Note that an attempt lost its answer, so the next one looks in Sent
+     * before sending. See SendOutcomeUnknownException.
+     */
+    public function markSendUnconfirmed(int $messageId): void
+    {
+        $this->createQueryBuilder('m')
+            ->update()
+            ->set('m.sendUnconfirmedAt', 'CURRENT_TIMESTAMP()')
+            ->where('m.id = :id')
+            ->andWhere('m.sentAt IS NULL')
+            ->setParameter('id', $messageId)
+            ->getQuery()
+            ->execute();
+    }
+
+    /**
+     * Mark a draft whose send finally failed, and stop its retry clock (#125).
+     *
+     * A bulk UPDATE rather than a change to the entity: it is written on the
+     * way out of a failed send, after the entity manager has been cleared of
+     * whatever the attempt left half-done, and a bulk update goes to the
+     * database without reading anything back into it. Not on a message that
+     * went out after all — sent_at is the one fact that wins.
+     */
+    public function markSendFailed(int $messageId, SendFailure $failure): void
+    {
+        $this->createQueryBuilder('m')
+            ->update()
+            ->set('m.sendFailedAt', 'CURRENT_TIMESTAMP()')
+            ->set('m.sendFailure', ':failure')
+            ->set('m.sendRetryingSince', 'NULL')
+            ->set('m.sendUnconfirmedAt', 'NULL')
+            ->where('m.id = :id')
+            ->andWhere('m.sentAt IS NULL')
+            ->setParameter('id', $messageId)
+            ->setParameter('failure', $failure->value)
+            ->getQuery()
+            ->execute();
+    }
+
+    /**
+     * How many of a user's drafts carry a failed-send warning — the sidebar's
+     * mark on Drafts. Drafts only, by label as the Drafts list selects them, so
+     * a marked draft that was thrown away stops counting with it.
+     */
+    public function countUnsentDraftsForUser(User $user): int
+    {
+        return (int) $this->createQueryBuilder('m')
+            ->select('COUNT(DISTINCT m.id)')
+            ->innerJoin('m.account', 'a')
+            ->innerJoin('m.labels', 'l')
+            ->where('a.usr = :user')
+            ->andWhere('m.sendFailedAt IS NOT NULL')
+            ->andWhere('m.sentAt IS NULL')
+            ->andWhere('l.role = :drafts')
+            ->setParameter('user', $user)
+            ->setParameter('drafts', LabelRole::Drafts)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     /**
@@ -2727,6 +2820,8 @@ class MessageRepository extends ServiceEntityRepository
                 'm.sentAt',
                 'm.createdAt',
                 'm.submissionSendAt',
+                // The warning a draft whose send failed wears in the list (#125).
+                'm.sendFailure',
                 // Whether the message is filed under Sent or Drafts, for
                 // ThreadRowMessage::$filedAsSent. A count in the same statement
                 // rather than a join: a join would repeat the row per label,
