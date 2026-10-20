@@ -8,6 +8,17 @@ The published image tags: `latest` follows the most recent release below,
 
 ## Unreleased
 
+**A short outage of the AI host no longer leaves mail without a category for good.** When the
+assistant's host could not be reached, the message was still marked as asked, so the catch-up never
+offered it again: a one-minute outage left 327 messages with no AI category and no second attempt.
+A message is now left unmarked, and offered again by the catch-up a quarter of an hour later, when
+the call timed out, the connection was refused, or the host answered 401, 403, 408, 429 or any 5xx.
+A host that stays down is tried at that pace and no faster. Held mail is still released at once
+under the rules' answer. Everything else is marked as before and not asked again: an answer, an
+answer that is no use, a model the host does not have (404), and a refusal of the request itself
+(400, 413, 422), which would only come back the same. Mail marked during an earlier outage stays
+marked. No schema change. [#222](https://github.com/karatektus/pl_mail/issues/222), by @phdelodder.
+
 **The weekly cleanup works on installs that moved their storage, and clears old thumbnails.**
 `app:prune:blobs` looked for leftover files under a fixed `var/`, so on an install that sets
 `APP_STORAGE_DIR` to another directory it found nothing and reclaimed nothing. It now looks where
