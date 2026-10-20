@@ -8,6 +8,13 @@ The published image tags: `latest` follows the most recent release below,
 
 ## Unreleased
 
+**Releases are published on GitHub, so you can follow them in a feed reader.** Each tagged release
+now gets a page under [Releases](https://github.com/karatektus/pl_mail/releases) with its notes
+from this changelog and the image to pull, once that image is published. Subscribe to
+`https://github.com/karatektus/pl_mail/releases.atom`, or use **Watch → Custom → Releases** on
+GitHub. Releases from v0.3.0 on have a page. Nothing changes in the image.
+[Discussion #226](https://github.com/karatektus/pl_mail/discussions/226), asked by @adrianfurgol.
+
 **A parcel on its way no longer says Delivered, and an order number is not taken for its tracking
 number.** A FedEx or UPS mail that said the parcel "will be delivered tomorrow", or offered a text
 "when it's delivered", gave a card marked Delivered beside tomorrow's date, because any "delivered"
