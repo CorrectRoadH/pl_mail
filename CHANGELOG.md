@@ -18,6 +18,12 @@ in the bin. One that you deleted whole still leaves its labels, as before. A par
 conversation is listed in Trash too, and opening it still shows the deleted messages with the rest.
 No schema change. [#268](https://github.com/karatektus/pl_mail/issues/268).
 
+**A long message scrolls in the expanded compose window.** Expanded, the editor stayed 170px tall
+and cut a longer message off mid-line, with nothing to scroll. It now fills the window and grows
+with the text, and the window scrolls. A short message still fills the window, so clicking under
+the text still puts the cursor there. The plain-text field fills the expanded window as well.
+[#262](https://github.com/karatektus/pl_mail/issues/262).
+
 **The month view says what is on a day.** An entry in a month cell was its time on one line and its
 title cut to a single line under it, which at a normal width left "Lea…" and "Ihre…", and for an
 invitation a lone "…". It is now the title first, on up to two lines, and under it the time it runs
