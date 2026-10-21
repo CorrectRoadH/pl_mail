@@ -4,9 +4,113 @@ Notable changes per release. plMail runs its migrations automatically on boot,
 so anything that changes the schema irreversibly is called out explicitly.
 
 The published image tags: `latest` follows the most recent release below,
-`main` follows the tip of the default branch, and `sha-…` pins one commit.
+`main` follows the tip of the default branch, `milestone-vX.Y.Z` the work collected for that
+release before it reaches `main`, and `sha-…` pins one commit.
 
-## Unreleased
+## v0.3.7 — 2026-10-20
+
+<!-- highlight screenshot=sso-only -->
+**Single sign-on can be the only way in.** A new setting under Admin → SSO, **Single sign-on only**
+(or `OIDC_DISABLE_PASSWORD_LOGIN=true` in the environment), hides the password form and makes the
+server refuse a password sign-in, so everybody comes in through the provider. It is in force only
+while a provider is set up, so a provider that was removed cannot leave an install with no way in,
+and the box can be ticked only by an administrator who has signed in through the provider
+themselves. If the provider is down, `php bin/console app:sso:allow-password-login` brings the form
+back. App passwords for mail clients and the phone apps, and sessions that are already open, are not
+affected. Off by default. Schema change: one boolean column on `oidc_config`, false for every
+existing install. [#169](https://github.com/karatektus/pl_mail/issues/169).
+
+**A reply threads for the person who gets it.** A reply sent from plMail, in the web composer or
+over JMAP, reached the recipient without `In-Reply-To` or `References`, so Outlook, Gmail and Apple
+Mail showed it as a new conversation instead of part of the one it answered. The draft always held
+both; the mail built from it never carried them. They are written now, and `References` always
+ends with the message answered, as RFC 5322 asks, even when the draft's own list left it out. A mail
+that is not a reply is unchanged, and replies already sent stay as they went out. No schema change.
+[#206](https://github.com/karatektus/pl_mail/issues/206), by @phdelodder.
+
+**A send that fails for a passing reason is tried again, and one that finally fails is marked on
+the draft.** Every failed send used to be dropped at once, whatever the reason, so a one-minute
+Gmail rate limit or a short outage lost the mail and only a toast said so. A rate limit, a provider
+failing on its side, a busy or greylisting mail server, or a connection that never opened is now
+tried again for up to two minutes, keeping the wait Gmail or Outlook asks for, and nothing is said
+while it is. A refusal, such as an unknown recipient or a message too large, is said at once, as
+before. When the answer to a send is lost after the provider had the mail, it is never sent again
+without checking: Gmail and Outlook accounts look for it in Sent first, and SMTP accounts report it
+as possibly sent. A send that finally fails puts a red warning triangle on the draft in Drafts,
+with the reason, and the same triangle on Drafts in the sidebar while any draft has one; the toast
+now says why. The migration adds four nullable columns and a partial index to `message`; it is
+additive and needs no backfill. [#125](https://github.com/karatektus/pl_mail/issues/125).
+
+**IMAP mail with a repeated Date header is imported, and Proton Mail Bridge folders sync.** A
+message carrying its Date header two or three times (some gateways add their own) could not be read
+by the IMAP library: it stopped with an error, and that took the rest of its page of the sync or
+import with it, every time. Such a message is now read with only the first of each repeated Date,
+Message-ID, In-Reply-To and References, and the stored source keeps every line the server sent. A
+message that still cannot be read costs only itself: it is tried again on the next syncs and then
+skipped, like other unreadable mail. And Proton Mail Bridge answered the search for new mail with
+"no such message", which failed that folder's sync on every poll; that answer now counts as no new
+mail. No schema change. [#219](https://github.com/karatektus/pl_mail/issues/219), reported by
+@sponger544.
+
+**Releases are published on GitHub, so you can follow them in a feed reader.** Each tagged release
+now gets a page under [Releases](https://github.com/karatektus/pl_mail/releases) with its notes
+from this changelog and the image to pull, once that image is published. Subscribe to
+`https://github.com/karatektus/pl_mail/releases.atom`, or use **Watch → Custom → Releases** on
+GitHub. Releases from v0.3.0 on have a page. Nothing changes in the image.
+[Discussion #226](https://github.com/karatektus/pl_mail/discussions/226), asked by @adrianfurgol.
+
+**A parcel on its way no longer says Delivered, and an order number is not taken for its tracking
+number.** A FedEx or UPS mail that said the parcel "will be delivered tomorrow", or offered a text
+"when it's delivered", gave a card marked Delivered beside tomorrow's date, because any "delivered"
+in the mail counted. Only a delivery the mail says has happened counts now. A FedEx mail for an eBay
+purchase also put the eBay order number on the card instead of the tracking number, since both are
+twelve digits, so Track led nowhere; a number labelled "Order number", "Reference", "Bestellnummer"
+or the like is no longer read as a tracking number. A card wrongly marked Delivered is put right
+by the carrier's next mail or by `app:backfill insights --since=7d`; a card that already carries an
+order number stays until you dismiss it from its `⋮` menu. No schema change.
+[#120](https://github.com/karatektus/pl_mail/issues/120), reported by @sbach89.
+
+**Amazon parcels from amazon.co.uk are on the radar, on the right day.** Parcels were read from
+the German, American and French Amazon shops only, so an "Out for delivery" mail from amazon.co.uk
+gave no card. amazon.co.uk, amazon.ca, amazon.com.au, amazon.in and amazon.sg are now read the same
+way, and the card's Track button opens the shop that sent the mail. A delivery date such as
+"23/10/2026" is now read from the shops of countries that write the day first; it used to give a
+card with no date. And "arriving today" or "tomorrow" is counted from the day on your calendar,
+in your timezone from Settings → General, instead of the day in UTC, which put a parcel a day early for a mail
+that came in on an Australian morning and a day late for one on an American evening. That also
+applies to the carriers' own mail ("Zustellung heute"). Mail that is already in plMail gets its card,
+or its corrected day, when `app:backfill insights --since=7d` reads it again. No schema change.
+[#207](https://github.com/karatektus/pl_mail/issues/207).
+
+**A short outage of the AI host no longer leaves mail without a category for good.** When the
+assistant's host could not be reached, the message was still marked as asked, so the catch-up never
+offered it again: a one-minute outage left 327 messages with no AI category and no second attempt.
+A message is now left unmarked, and offered again by the catch-up a quarter of an hour later, when
+the call timed out, the connection was refused, or the host answered 401, 403, 408, 429 or any 5xx.
+A host that stays down is tried at that pace and no faster. Held mail is still released at once
+under the rules' answer. Everything else is marked as before and not asked again: an answer, an
+answer that is no use, a model the host does not have (404), and a refusal of the request itself
+(400, 413, 422), which would only come back the same. Mail marked during an earlier outage stays
+marked. No schema change. [#222](https://github.com/karatektus/pl_mail/issues/222), by @phdelodder.
+
+**The weekly cleanup works on installs that moved their storage, and clears old thumbnails.**
+`app:prune:blobs` looked for leftover files under a fixed `var/`, so on an install that sets
+`APP_STORAGE_DIR` to another directory it found nothing and reclaimed nothing. It now looks where
+the files are written. The preview thumbnails of attachments are kept there too now, beside the
+attachments, instead of under a fixed `var/`; on such an install the old `var/attachments/thumbs`
+directory can be deleted, and the thumbnails are drawn again when they are next shown. The cleanup
+also deletes the thumbnails of attachments that no longer exist, which nothing removed before. No
+schema change. [#232](https://github.com/karatektus/pl_mail/issues/232),
+[#233](https://github.com/karatektus/pl_mail/issues/233).
+
+**The installed app has the icon you picked, on iPhone and Android too.** The tab icon followed
+Settings → Appearance → Logo, but an app installed from the browser or added to a home screen kept
+the wax seal, because its icons came from fixed files. The install manifest and the iOS home-screen
+icon now name your choice. Your browser draws them as PNGs when you pick a logo and uploads them for
+your account, so the image needs nothing new to draw them; a logo picked before this is drawn by the
+next page you open. An app that is already installed keeps its old icon until the browser refreshes
+it or you reinstall. No migration. [#141](https://github.com/karatektus/pl_mail/issues/141), building
+on #92 by @Flouss.
 
 **Profile pictures, signature images and backgrounds no longer vanish on a Sunday morning.** The weekly
 clean-up of files nothing points at (`app:prune:blobs`, Sundays at 05:00) walked the whole of the
@@ -227,19 +331,14 @@ a sandbox that sends no session cookie, so each image was answered with a redire
 page. They now load through a signed link (`/mail/inline/{id}`) that only answers for an image of
 the message being read, and nothing that is not a picture. The link stops working after a day or
 two, so one that leaks through a forward or a log does not open the image for good; the message
-signs a fresh one each time it is shown. Images labelled `application/octet-stream` or
-`image/octet-stream` load the same way when their bytes are a picture. Messages already in the
+signs a fresh one each time it is shown. Many mailers label an inline image
+`application/octet-stream`, or `image/octet-stream`, which is not a registered type at all and is
+what Vaultwarden's notification mails put on their logo, and such a part was served as a download.
+For those labels only, the file's own bytes now decide: a PNG, JPEG, GIF or WebP is shown, while
+SVG, HTML and anything unrecognised are still downloads. A remote image with that label is
+identified the same way by the image proxy and served under its real type. Messages already in the
 mailbox are fixed too, no backfill needed. No schema change.
-
-**Single sign-on can be the only way in.** A new setting under Admin → SSO, **Single sign-on only**
-(or `OIDC_DISABLE_PASSWORD_LOGIN=true` in the environment), hides the password form and makes the
-server refuse a password sign-in, so everybody comes in through the provider. It is in force only
-while a provider is set up, so a provider that was removed cannot leave an install with no way in,
-and the box can be ticked only by an administrator who has signed in through the provider
-themselves. If the provider is down, `php bin/console app:sso:allow-password-login` brings the form
-back. App passwords for mail clients and the phone apps, and sessions that are already open, are not
-affected. Off by default. Schema change: one boolean column on `oidc_config`, false for every
-existing install. [#169](https://github.com/karatektus/pl_mail/issues/169).
+[#213](https://github.com/karatektus/pl_mail/issues/213).
 
 **A deleted label no longer comes back after the next sync.** On a plain IMAP account, and for a
 folder on Outlook, deleting a label left its folder on the mail server, and the next sync made the
@@ -254,17 +353,6 @@ yet) no longer shows as "Importing" in the activity indicator. Deleting an Outlo
 reached Outlook at all, and now does; labels nested under a Gmail label are deleted in Gmail with
 it. No schema change.
 [#40](https://github.com/karatektus/pl_mail/issues/40).
-
-**Inline images labelled `application/octet-stream` show up.** Many mailers do not say what an
-inline image is — they label it `application/octet-stream`, or `image/octet-stream`, which is not
-a registered type at all and is what Vaultwarden's notification mails put on their logo — and the
-attachment route served every such part as a download, so the image never appeared in the message. For those labels only, the file's own
-bytes now decide, held to the same allow-list as everything else: a PNG, JPEG, GIF or WebP is
-served inline, while SVG, HTML and anything unrecognised are still downloads. The image proxy
-already did this for unlabelled remote images and now shares the same check, so a remote image
-labelled `image/octet-stream` is now also identified from its bytes and served under its real
-type, rather than passed through under the label it came with. No schema change.
-Part of [#213](https://github.com/karatektus/pl_mail/issues/213).
 
 **A mail can go to Bcc recipients only.** Sending with nobody in To was refused with "Add at least
 one recipient before sending", even with addresses in Cc or Bcc: the window counted all three, but

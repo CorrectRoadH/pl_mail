@@ -1,4 +1,4 @@
-<!-- translated-from: internals/architecture.md sha1:85d7a30a92498ff837e59859b26271f534c627d1 -->
+<!-- translated-from: internals/architecture.md sha1:a6946565c51fc62825bb60bcdca5a9d26cf6438f -->
 # Architektur
 
 Die Schichten, was wo liegt, und die Regeln, die das so halten. Diese Seite beschreibt die
@@ -237,7 +237,7 @@ war, in dem das Projekt vorher steckte: Logs und verwaiste Blobs wuchsen ohne Gr
 | `50 3 * * *` | `app:calendar:materialise` | Rollt den Horizont der Termininstanzen vorwärts, damit einem Serientermin nicht klammheimlich die Termine ausgehen |
 | `30 4 * * *` | `app:monitoring:prune` | Log-Einträge, Push-Zustellungen, tote Heartbeats, fertige Hintergrundjobs (30 Tage) und abgelaufene vertraute Geräte |
 | `37 * * * *` | `app:updates:check` | Stündlich, zu einer krummen Minute: Die Registry und GitHubs anonyme API teilen sich alle Installationen. Jeder neue Build wird einmal angekündigt, wie oft er auch gefunden wird |
-| `0 5 * * 0` | `app:prune:blobs` | Wöchentlich; er läuft die nummerierten Konto-Verzeichnisse dreier Speicher ab, und eine Woche Waisen ist ein Rundungsfehler. Die Verzeichnisse anderer Speicher daneben — Profilbilder, Signaturbilder, Hintergründe, versiegelte Nachrichten — fasst er nicht an (#214) |
+| `0 5 * * 0` | `app:prune:blobs` | Wöchentlich; er läuft die Verzeichnisse pro Konto in drei Ablagen unter `APP_STORAGE_DIR` ab, dazu die Vorschaubilder der Anhänge, und eine Woche Waisen ist ein Rundungsfehler. Nur diese: Profilbilder, Signaturbilder, Hintergründe, versiegelte Nachrichten und alles andere auf denselben Volumes bleiben unangetastet |
 
 Der Zeitplan ist `stateful()` gegen den Cache und `processOnlyLastMissedRun(true)`. Ein Worker,
 der über einen geplanten Lauf hinweg unten war, holt also nach, statt den Tag stillschweigend

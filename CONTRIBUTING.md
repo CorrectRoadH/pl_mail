@@ -29,7 +29,9 @@ new section of the app — gets a short design in its issue before any code.
 **Milestones are releases.** `v0.3.6` is the next patch release and `v0.4.0` the next minor one;
 an issue with no milestone is in the backlog. A pull request belongs to the milestone of the issue
 it closes. A release is a milestone with nothing left open, closed when it is tagged (see
-[Releasing](#releasing)).
+[Releasing](#releasing)). An issue closes when the pull request that names it is merged, whether
+into `main` or into a milestone branch (`milestone/v0.4.0`); GitHub only does the first itself, so
+`.github/workflows/close-milestone-issues.yml` does the second.
 
 **Labels**: one type — `bug`, `enhancement`, `documentation`, `chore` — a status from triage, and
 one or more `area: …` (mail, calendar, gmail, outlook, imap, mobile, settings, install).
@@ -297,6 +299,18 @@ as `X.Y.Z`, `X.Y` and `latest`, and from there it travels without anybody here d
    merges, usually within hours. A major version gets a pull request of its own.
 4. The merge publishes the catalogue, and TrueNAS offers the update to everyone who installed plMail
    from **Apps → Discover**.
+
+The tag also publishes a GitHub Release, once the image is up: the `release` job in `docker.yml`
+cuts the version's section out of `CHANGELOG.md` with `bin/release-notes.sh` and makes it the
+release's notes. Nothing is attached; it is the page `releases.atom` and **Watch → Releases**
+follow. The job reads the CHANGELOG of the tagged commit, so the `## vX.Y.Z — date` heading has to
+be in that commit and spelled as the tag is, or the job fails with the image already out.
+Re-running it reads the same commit and fails again; fix the heading on `main` and publish the
+release from there by hand:
+
+```bash
+bin/release-notes.sh vX.Y.Z > notes.md && gh release create vX.Y.Z --verify-tag --title vX.Y.Z --notes-file notes.md
+```
 
 So a tag reaches other people's NAS boxes within about a day, with migrations that run on boot, and
 **it cannot be taken back**: there is no cool-down in that Renovate configuration and no way to
@@ -929,7 +943,7 @@ php bin/mirror-wiki.php --check
 | `app:gmail:quota-probe [account] [--mode=all] [--count=30]` | Without an account, list the Gmail accounts and ask which. Fetch a fixed number of stored Gmail messages one way per minute (batched as an import does, or singly in each format), holding the account's import meanwhile, so the cost Google charges for each can be read off the Cloud console's quota chart. Stores and changes nothing |
 | `app:gmail:skipped [account] [--list=N] [--forget]` | Show the Gmail messages an import looked at and did not store. Without an account, one line per Gmail account: stored, skipped, Gmail's own total. With one, the skipped messages grouped by kind (chat, draft, sent from another address, delivered to another address, unfetchable), by Gmail label and by address, and with `--list` the messages themselves. Reads only what was recorded when each message was looked at; asks Gmail nothing. `--forget` deletes the record for the account so the next listing asks for those messages again |
 | `app:attachments:reclassify` | Recompute inline/attachment classification for stored parts |
-| `app:prune:blobs [--days=N] [--dry-run]` | Expire staged JMAP uploads and delete files orphaned by deleted rows. Only looks in the per-account directories of `var/uploads`, `var/attachments` and `var/raw`; everything else on those volumes belongs to someone else |
+| `app:prune:blobs [--days=N] [--dry-run]` | Expire staged JMAP uploads, delete files orphaned by deleted rows and the thumbnails of attachments that no longer exist. Only looks in the per-account directories of `uploads`, `attachments` and `raw` under `APP_STORAGE_DIR`, and in `attachments/thumbs`; everything else on those volumes belongs to someone else |
 | `app:user:promote <email> [--revoke]` | Grant or revoke `ROLE_ADMIN` |
 | `app:user:2fa-disable <email> [--force]` | Turn off 2FA for someone locked out — see "Two-factor authentication" |
 | `app:user:password <email> [--password=…] [--no-change-required]` | Set a new password for a user who can no longer sign in. Prompted for, hidden and twice, unless `--password` is given. A one-time password unless `--no-change-required`: the person chooses their own straight after signing in, because the operator knows this one. Locks the person's encryption keys, which hang off the old password; their recovery phrase or a known device opens them again. Console-only for the same reason as `app:user:2fa-disable`: an administrator who could do it from a browser would be a second way into that person's mailbox |

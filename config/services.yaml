@@ -204,9 +204,15 @@ services:
         arguments:
             $projectDir: '%kernel.project_dir%'
             $storageDir: '%env(APP_STORAGE_DIR)%'
+    App\Domain\Helper\AppIconStorage:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $storageDir: '%env(APP_STORAGE_DIR)%'
+            $secret: '%kernel.secret%'
     App\Command\Maintenance\PruneBlobsCommand:
         arguments:
             $projectDir: '%kernel.project_dir%'
+            $storageDir: '%env(APP_STORAGE_DIR)%'
 
     App\Service\Ai\BackfillPolicy:
         arguments:
@@ -220,6 +226,7 @@ services:
     App\Service\Mail\AttachmentThumbnailer:
         arguments:
             $projectDir: '%kernel.project_dir%'
+            $storageDir: '%env(APP_STORAGE_DIR)%'
     App\Service\Mail\MessageFrameScript:
         arguments:
             $projectDir: '%kernel.project_dir%'
