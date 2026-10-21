@@ -546,6 +546,22 @@ admin:
                 permission to this app registration — the crew's almanacs then
                 come aboard with the same boardin' they already use for mail.
                 Without it, mail sails on an' the almanacs simply never appear.
+            consent_heading: 'If yer fleet approves apps for its crew'
+            consent_microsoft: 'Some Microsoft 365 fleets don''t let the crew approve apps themselves: an admiral approved plMail once, for the permissions it asked for then. plMail now also asks for Contacts.ReadWrite, which that approval don''t cover, so Microsoft turns away every sign-in to plMail, mail and all, till it be approved again. Before any hand signs in again, open the Microsoft Entra admin centre → Enterprise applications → plMail → Permissions and choose Grant admin consent. Personal Microsoft accounts, and fleets where the crew approve apps themselves, be not affected.'
+            contacts_google: >-
+                Hoist the Google People API for this project and add the
+                .../auth/contacts scope to the consent screen — the crew then
+                bring their shipmates aboard with the same sign-in. Hands who
+                came aboard earlier are asked once, in their settings, to sign
+                in again. Without it, post and almanacs sail on and the
+                shipmates simply stay ashore.
+            contacts_heading: 'The crew rolls sail under this same charter'
+            contacts_microsoft: >-
+                Add the Contacts.ReadWrite delegated permission to this app
+                registration — the crew then bring their Outlook shipmates
+                aboard with the same sign-in. Hands who came aboard earlier are
+                asked once, in their settings, to sign in again. Without it,
+                post and almanacs sail on and the shipmates simply stay ashore.
             env_note: 'Leave these empty and GOOGLE_OAUTH_* / MICROSOFT_OAUTH_* from th'' environment take over, so a ship already rigged that way sails on.'
             from_env: 'From th'' environment'
             google: 'Gmail boardin'''
@@ -2340,9 +2356,7 @@ oauth:
     error:
         generic: We couldn't tie up that crew member. Try again, matey.
         microsoft:
-            admin_consent_required: >-
-                Yer fleet requires an admiral to approve plMail afore ye can tie
-                up this crew member. Ask yer Microsoft admiral for leave.
+            admin_consent_required: 'Yer fleet needs an admiral to approve plMail afore ye can connect this account. If it worked afore, plMail now also asks for yer contacts, and that needs their blessing too. Ask yer Microsoft admiral to grant access.'
             app_not_found: >-
                 plMail ain't on the roster of yer Microsoft fleet.
             bad_credentials: >-
@@ -3220,6 +3234,13 @@ settings:
                     lock be thrown, or when th'' harbourmaster tears up yer
                     papers.
                 title: '%account% must sign on again'
+            account_contacts_scope_missing:
+                body: >-
+                    plMail can now keep this vessel's shipmates in its log, but
+                    %account% came aboard before it asked. Post and charts sail
+                    on unharmed. Sign aboard once more and allow the shipmates,
+                    and the crew roll appears under Shipmates.
+                title: 'Bring %account% aboard again to muster its shipmates'
             account_scope_missing:
                 body: >-
                     Some leave plMail asked for when ye signed this account on
@@ -3348,6 +3369,12 @@ settings:
                 promise: >-
                     Tries th'' abandoned tasks once more. Safe t'' press — any
                     that fail again just wash back up here.
+            grant_contacts:
+                label: 'Allow the shipmates'
+                promise: >-
+                    Sends ye back to the harbourmaster to sign aboard as
+                    %account% and allow the shipmates. Yer post stays as it is,
+                    and nothing is hauled aboard twice.
             grant_calendar:
                 label: 'Grant full leave'
                 promise: >-
@@ -3435,6 +3462,7 @@ settings:
         disabled: 'Line slackened'
         disconnect: 'Cast off'
         disconnect_confirm: 'Cast off from %name%? Cargo already hauled aboard stays put.'
+        disconnect_confirm_mirrored: 'Cast off from %name%? %calendars% almanac(s) and %books% ledger(s) o'' names go overboard with it; what came by mail be stowed in yer default almanac first. Cargo already hauled aboard stays put.'
         disconnected: 'Cast off'
         edit: Edit
         empty: 'No ports moored yet.'
@@ -3490,6 +3518,71 @@ settings:
         option_none: All three
         option_split: Full breadth only
         subheading: 'How the calendar button up top moves between views.'
+    contacts:
+        allow_contacts: 'Allow the shipmates'
+        allow_contacts_hint: 'Came aboard before plMail asked for shipmates. Sign aboard once more and allow them, and this vessel''s crew roll appears here.'
+        allow_contacts_microsoft: 'If yer fleet approves apps for its crew, ask yer admiral to approve plMail''s contacts permission first. Till they do, Microsoft turns this sign-in away.'
+        carddav:
+            connect: Make fast to a CardDAV port
+            disconnect: Cut the line to "%name%"
+            disconnect_confirm: >-
+                Cut the line to "%name%"? Every roll kept in step with it be
+                struck from this deck, with any change not yet sent. The hands
+                in port be left be.
+            field:
+                address: The port's address
+                address_help: >-
+                    The CardDAV address yer port shows ye, or just its domain —
+                    plMail hails the domain an' asks where its rolls be moored
+                    afore it gives up.
+                name: What it be called
+                name_help: What to call this line in yer settin's.
+                reuse: Use the word from one o' me parrot accounts
+                reuse_account: Which account's word
+                reuse_account_none: Pick an account…
+                reuse_help: >-
+                    Off unless ye say so, an' best left off: most ports want a
+                    ship's key of their own, an' a tick here sends a word ye
+                    gave plMail for yer parrots off to the address above.
+                secret: Ship's key
+                secret_help: >-
+                    Cut one aboard yer own port instead o' handin' over yer
+                    boardin' word — iCloud an' Fastmail take naught else.
+                username: Yer name aboard
+                username_help: The name yer port knows ye by.
+            intro: >-
+                Any CardDAV port at all: Nextcloud, Radicale, Baïkal, Fastmail,
+                iCloud. Most like the same address an' ship's key as yer
+                almanacs.
+            submit: Make fast an' find the rolls
+            title: Make fast to a CardDAV port
+        empty: No port o' hands made fast yet.
+        find: Pick the rolls
+        heading: Rolls o' hands
+        intro: >-
+            Rolls kept in step with a CardDAV port. The hands on 'em be offered
+            when ye write, an' what ye mend here be sent back.
+        never_synced: Not yet in step
+        no_books: No roll picked from this port yet.
+        open: Open the rolls
+        read_only: Read only
+        subheading: Where yer rolls o' hands come from.
+        subscribe:
+            empty: '"%name%" offers no rolls.'
+            intro: Pick which rolls from "%name%" plMail keeps in step.
+            mirrored: Kept in step
+            save: Stow it
+            title: Pick the rolls
+            unsubscribe_note: >-
+                Untick a roll an' its copy here goes overboard, with any change
+                not yet sent. The port keeps its own.
+        sync_now: Bring "%name%" in step now
+        synced: In step %date%
+        toast:
+            disconnected: Line to the port cut
+            saved: Rolls stowed
+            sync_queued: Bringin' 'em in step
+            unchanged: Naught changed
     calendars:
         account_hint: Where reckonin's found in parrots from %address% be filed.
         caldav:
@@ -3551,6 +3644,8 @@ settings:
                 accounts do; for aught else, make fast to a CalDAV port.
             find: Find the almanacs on %name%
             heading: Where almanacs come from
+            managed: 'Rigged under Integrations'
+            managed_hint: '%name% holds yer cargo too. Cut the line in Settings → Integrations.'
             why_admin: >-
                 Yer quartermaster may not have given the papers plMail signs in
                 with any almanac rights. Parrots sail without 'em; almanacs do
@@ -3573,6 +3668,7 @@ settings:
                 Tick the almanacs on %name% for plMail to keep in step with.
                 Reckonin's turn up within the minute.
             mirrored: Already kept in step
+            mirrored_elsewhere: 'Already kept in step through %name%'
             primary: The main one
             save: Stow the choosin'
             title: Find me almanacs
@@ -3629,6 +3725,7 @@ settings:
         calendar_behaviour: Behaviour
         calendars: Almanacs
         categories: "Holds"
+        contacts: Rolls o' hands
         disposal: Disposal
         filters: Sieves
         general: General
@@ -4305,3 +4402,205 @@ whats_new:
     screenshot_close: 'Stow the likeness'
     screenshot_open: 'Open the likeness full size'
     title: 'What''s new aboard'
+contacts:
+    add_address: 'Add port'
+    add_custom: 'Add a field, matey'
+    add_date: 'Add a date'
+    add_email: 'Add bottle address'
+    add_im: 'Add a parrot address'
+    add_phone: "Add speakin' tube"
+    add_relation: 'Add a shipmate'
+    add_to_address_book: 'Sign on to crew'
+    add_url: 'Add a port o'' call'
+    back: Back
+    book_all: 'Every hold'
+    book_local: 'Kept aboard'
+    cancel: 'Belay that'
+    check_carefully: 'Mind this one'
+    city: 'Port town'
+    company: Crew
+    confidence: '%pct%% alike'
+    count: '{0}No shipmates|{1}1 shipmate|]1,Inf[ %count% shipmates'
+    country: Land
+    created: 'Shipmate signed aboard.'
+    custom_label_placeholder: 'Field name'
+    custom_value_placeholder: 'Booty'
+    date_full: '%month% %day%, %year%'
+    date_no_year: '%month% %day%'
+    day: 'Day'
+    delete: "Make 'em walk the plank"
+    delete_confirm: 'Send %name% to Davy Jones? They sit in the brig 90 days afore they be gone for good.'
+    deleted_contact: '(shipmate gone)'
+    display_name: 'Full name'
+    duplicates: Doubles
+    duplicates_count: '{1}1 likely pair|]1,Inf[ %count% likely pairs'
+    duplicates_none: 'No doubles aboard. New hauls be checked by themselves.'
+    edit: 'Mend shipmate'
+    email_placeholder: name@example.com
+    empty: 'No shipmates yet. Sign on yer first, or haul some in from a vCard or CSV file.'
+    empty_search: 'No shipmate answers to that.'
+    export_vcf: 'Send off as vCard'
+    field:
+        birthday: 'Day o'' birth'
+        company: 'Ship'
+        department: 'Deck'
+        familyName: 'Last name'
+        givenName: 'First name'
+        jobTitle: 'Rank'
+        middleName: 'Middle name'
+        namePrefix: 'Title'
+        nameSuffix: 'Suffix'
+        nickname: 'Pirate name'
+        officeLocation: 'Cabin'
+        phoneticCompany: 'Ship (as it be spoken)'
+        phoneticFamilyName: 'Last name (as it be spoken)'
+        phoneticGivenName: 'First name (as it be spoken)'
+        phoneticMiddleName: 'Middle name (as it be spoken)'
+    im_placeholder: 'Handle or address'
+    im_service:
+        aim: 'AIM'
+        googleTalk: 'Google Talk'
+        icq: 'ICQ'
+        matrix: 'Matrix'
+        msn: 'MSN'
+        other: 'Other'
+        qq: 'QQ'
+        sip: 'SIP'
+        skype: 'Skype'
+        teams: 'Teams'
+        xmpp: 'XMPP (Jabber)'
+        yahoo: 'Yahoo'
+    im_service_label: 'Service'
+    import: 'Haul in'
+    import_bad_format: 'Only .vcf/.vcard and .csv files be hauled in.'
+    import_choose: 'Pick file'
+    import_confirm: 'Haul in %count% shipmates'
+    import_dedupe_note: 'After the haul ye land on the doubles page to merge any sailor hauled twice.'
+    import_expired: 'The haul went stale. Hoist the file again.'
+    import_formats: '.vcf, .vcard or .csv'
+    import_hint: 'A .vcf/.vcard crew list or a .csv file. Doubles be checked after the haul.'
+    import_no_file: 'No file came aboard.'
+    import_preview_count: '%count% shipmates found in the %format% file. The first few:'
+    import_step1: 'Step 1 — pick a file'
+    import_step2: 'Step 2 — a look'
+    import_upload: 'Hoist & look'
+    import_uploading: "Hoistin'…"
+    imported: 'Hauled in %count% shipmates.'
+    in_address_book: 'In yer crew'
+    keep_this: 'Keep this one'
+    label: Label
+    label_home: 'Home port'
+    label_mobile: 'Spyglass line'
+    label_other: Other
+    label_work: Ship
+    labels:
+        anniversary: 'Anniversary'
+        assistant: 'Cabin boy'
+        blog: 'Ship''s log'
+        brother: 'Brother'
+        child: 'Wee one'
+        father: 'Father'
+        friend: 'Matey'
+        home: 'Home port'
+        manager: 'Captain'
+        mobile: 'Mobile'
+        mother: 'Mother'
+        other: 'Other'
+        parent: 'Parent'
+        partner: 'First mate'
+        profile: 'Profile'
+        relative: 'Kin'
+        sibling: 'Sibling'
+        sister: 'Sister'
+        spouse: 'Spouse'
+        work: 'Ship'
+    merge: 'Lash together'
+    merge_pick_keep: 'Pick which shipmate stays aboard first.'
+    merge_read_only: 'A shipmate from a read-only book cannot be lashed together.'
+    merge_undo: Undo
+    merge_undo_expired: 'The 90-day window to undo this lashing has passed.'
+    merge_undone: 'Lashing undone.'
+    merged: 'Shipmates lashed together. Ye can undo it below.'
+    merged_into: 'Lashed %count% into %name%'
+    month: 'Month'
+    months:
+        1: 'January'
+        2: 'February'
+        3: 'March'
+        4: 'April'
+        5: 'May'
+        6: 'June'
+        7: 'July'
+        8: 'August'
+        9: 'September'
+        10: 'October'
+        11: 'November'
+        12: 'December'
+    nav: Shipmates
+    new: 'New shipmate'
+    next: Ahead
+    no_details: 'No particulars yet.'
+    no_subject: '(no subject)'
+    notes: Scribblings
+    page: 'Page %page%'
+    pane:
+        close: 'Stow the shipmates'
+        open_page: 'Unfurl the shipmates across the whole deck'
+        resize: 'Haul the shipmates wider or narrower'
+        toggle_close: 'Stow the shipmates'
+        toggle_open: 'Muster the shipmates beside the post'
+    pending: 'Waiting on a fair wind to the server'
+    phone_placeholder: '+1 555 010 2030'
+    phonetic: 'As it be spoken'
+    photo_hint: 'JPG, PNG or WebP, up to 5 MB.'
+    photo_invalid: "That portrait won't hang. JPG, PNG or WebP up to 5 MB."
+    photo_remove: 'Scuttle the portrait'
+    photo_removed: 'Portrait scuttled.'
+    photo_upload: 'Hang a portrait'
+    photo_uploaded: 'Portrait hung.'
+    postcode: Postcode
+    prev: Astern
+    primary: 'First mate'
+    primary_short: First
+    recent_merges: 'Recent lashings'
+    reference_emails: 'Letters exchanged'
+    reference_emails_empty: 'No bottles with this shipmate yet.'
+    reference_emails_hint: 'Every bottle to or from this shipmate not yet sunk — inbox, sent, drafts, bin and labels.'
+    region: Waters
+    rel_assistant: 'Cabin hand'
+    rel_manager: Captain
+    rel_partner: Partner
+    rel_related: Kin
+    related: 'Kin and crew'
+    relation_placeholder: 'Name'
+    remove: 'Toss overboard'
+    save: 'Stow it'
+    save_to: 'Stow in'
+    save_to_hint: 'A shipmate stowed in a synced book sails to its server, and from there to every vessel that syncs it.'
+    search: 'Search the crew'
+    search_placeholder: 'Search name, company or bottle address…'
+    section_addresses: Ports
+    section_custom: 'Yer own fields'
+    section_dates: 'Dates'
+    section_details: Particulars
+    section_emails: 'Bottle addresses'
+    section_ims: 'Parrots'
+    section_name: Name
+    section_notes: Scribblings
+    section_phones: "Speakin' tubes"
+    section_relations: 'Crew'
+    section_urls: 'Ports o'' call'
+    section_work: 'Ship'
+    street: Street
+    synced_read_only: 'Look but never touch: from %book% aboard %server%'
+    synced_with: 'Synced with %book% aboard %server%'
+    tag_all: 'All hands'
+    tags: Markings
+    tags_placeholder: 'Comma-separated, e.g. kin, traders'
+    title: Shipmates
+    trashed: 'Shipmate sent to the brig.'
+    updated: 'Shipmate stowed.'
+    url_placeholder: 'https://'
+    validation:
+        name_required: 'Give the shipmate a name.'
+    year_optional: 'Year (if ye know it)'
