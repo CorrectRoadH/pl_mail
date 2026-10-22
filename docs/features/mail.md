@@ -352,6 +352,12 @@ and regular shapes — tracking numbers, flight codes, `#123` — with no cloud 
 nothing guesses, and a mail that matches no known shape simply yields nothing. That is a deliberate
 trade — the radar would rather miss a parcel than invent one.
 
+**Mail in Spam puts nothing on the radar.** A fake shipping notice or booking is exactly what spam
+imitates, so a card read out of a conversation in Spam is left out of the **Happening Soon** panel
+and the strip above the mail list. Moving the conversation back with **Move to inbox** brings its
+cards straight back. The bin is different: deleting a shipping confirmation does not stop the parcel, so its card
+stays. Opening the spam mail itself still shows what it claims, in **Found in this conversation**.
+
 Every source has its own switch under **Settings → Insights**. Switching one off stops new cards
 from that source; what it already found stays until dismissed. The set of sources is extendable by
 design — an extractor added to a build lists itself on that settings page and starts running,

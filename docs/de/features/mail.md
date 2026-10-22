@@ -1,4 +1,4 @@
-<!-- translated-from: features/mail.md sha1:3ce077e532ee6d78f8b007edb8ab2e563af0413d -->
+<!-- translated-from: features/mail.md sha1:63a97755af5559b9f72bb64683d75a26cf95186e -->
 
 # Mail
 
@@ -390,6 +390,13 @@ Absender-Domains, Header und feste Muster — Sendungsnummern, Flugcodes, `#123`
 Cloud-Dienst und ohne Modell: Nichts rät, und eine Mail, die auf kein bekanntes Muster passt,
 ergibt schlicht nichts. Das ist ein bewusster Tausch — das Radar übersieht lieber ein Paket, als
 eines zu erfinden.
+
+**Mail im Spam bringt nichts aufs Radar.** Eine gefälschte Versandbestätigung oder Buchung ist
+genau das, was Spam nachahmt. Eine Karte aus einer Unterhaltung im Spam fehlt deshalb im Panel
+**Demnächst** und in der Leiste über der Mailliste. Holst du die Unterhaltung mit **In den Posteingang**
+zurück, sind ihre Karten sofort wieder da. Der Papierkorb ist etwas anderes: Wer eine Versandbestätigung
+löscht, hält das Paket nicht auf, also bleibt seine Karte. Öffnest du die Spam-Mail selbst, zeigt
+**In dieser Konversation gefunden** weiterhin, was sie behauptet.
 
 Jede Quelle hat ihren eigenen Schalter unter **Einstellungen → Radar**. Schaltest du eine aus,
 entstehen aus ihr keine neuen Karten mehr; was sie schon gefunden hat, bleibt, bis du es

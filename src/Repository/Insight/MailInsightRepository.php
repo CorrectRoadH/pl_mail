@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository\Insight;
 
 use App\Domain\Enum\Insight\InsightKind;
+use App\Domain\Enum\Mail\LabelRole;
 use App\Entity\Insight\MailInsight;
 use App\Entity\Mail\Account;
 use App\Entity\Mail\MessageThread;
@@ -50,7 +51,8 @@ class MailInsightRepository extends ServiceEntityRepository
     /**
      * Dated insights inside the window: a little of the recent past — a
      * parcel that landed this morning is still the answer to "where is my
-     * parcel?" — and the near future. Undismissed, active accounts only.
+     * parcel?" — and the near future. Undismissed, active accounts only, and
+     * nothing read out of spam (see notFromSpam()).
      *
      * @return list<MailInsight> soonest first
      */
@@ -69,6 +71,7 @@ class MailInsightRepository extends ServiceEntityRepository
             ->andWhere('i.happensAt IS NOT NULL')
             ->andWhere('i.happensAt >= :from')
             ->andWhere('i.happensAt <= :until')
+            ->andWhere(self::notFromSpam())
             ->orderBy('i.happensAt', 'ASC')
             // Ties here are the common case, not the exotic one: a parcel's ETA
             // is a DAY, so every parcel due on the same day sits at that day's
@@ -80,6 +83,7 @@ class MailInsightRepository extends ServiceEntityRepository
             ->setParameter('user', $user)
             ->setParameter('from', $now->modify(sprintf('-%d hours', $hoursBack)))
             ->setParameter('until', $now->modify(sprintf('+%d days', $daysAhead)))
+            ->setParameter('spamRole', LabelRole::Spam)
             ->getQuery()
             ->getResult();
     }
@@ -128,6 +132,7 @@ class MailInsightRepository extends ServiceEntityRepository
             ->andWhere('i.happensAt IS NULL')
             ->andWhere('COALESCE(m.receivedAt, i.createdAt) >= :from')
             ->andWhere('(i.kind <> :otp OR COALESCE(m.receivedAt, i.createdAt) >= :otpFrom)')
+            ->andWhere(self::notFromSpam())
             ->orderBy('seenAt', 'DESC')
             // Same reason, and likelier still: these are written by the
             // harvester as it walks a batch of mail, so a run that reads twenty
@@ -138,8 +143,38 @@ class MailInsightRepository extends ServiceEntityRepository
             ->setParameter('from', $now->modify(sprintf('-%d days', $daysBack)))
             ->setParameter('otp', InsightKind::Otp->value)
             ->setParameter('otpFrom', $now->modify(sprintf('-%d minutes', $otpMinutes)))
+            ->setParameter('spamRole', LabelRole::Spam)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * DQL for "the card's conversation is not in Spam" (#304), for the two
+     * lists above; the caller binds :spamRole.
+     *
+     * Spam is where fake parcel notices, bookings and codes live, because they
+     * are exactly what spam imitates, and the radar showed them beside the real
+     * ones. Filtered when the cards are READ rather than kept from being
+     * harvested, so moving the mail out of Spam brings a card back with no re-harvest, and a
+     * mail that is moved INTO spam after its card was made loses it at once.
+     *
+     * Any Spam label on the conversation takes the card out — the All Mail rule
+     * (MessageThreadRepository::allMailQuery()). The thread's labels are its
+     * messages' (ThreadLabelSynchronizer), so the thread is the one place to
+     * ask. A card whose conversation is gone has nothing to ask and stays.
+     *
+     * The bin is left alone on purpose: deleting a shipping confirmation does
+     * not un-ship the parcel (MailInsight::$thread), and the card is still the
+     * answer to "where is my parcel?".
+     *
+     * And only these lists. forThread() is the card above the mail itself, and
+     * a person reading the spam mail sees what it claims either way.
+     */
+    private static function notFromSpam(): string
+    {
+        return 'NOT EXISTS (SELECT spamThread.id FROM ' . MessageThread::class . ' spamThread'
+            . ' JOIN spamThread.labels spamLabel'
+            . ' WHERE spamThread.id = IDENTITY(i.thread) AND spamLabel.role = :spamRole)';
     }
 
     /**
