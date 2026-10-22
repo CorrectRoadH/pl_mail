@@ -1702,6 +1702,54 @@ class MessageRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    /**
+     * A sibling's own IMAP copies that a Gmail mailbox has merged into, a page
+     * at a time in id order: the rows with a folder of their own AND a carrier.
+     *
+     * The folder is what tells these apart from the other carried rows. A row
+     * Gmail built for a sibling has no IMAP folder and Gmail is its only
+     * source; a row with one is the IMAP server's, and Gmail only knows about
+     * it. See GmailifyLinks.
+     *
+     * By the carrier's id rather than the entity: the callers page through
+     * tens of thousands of rows and clear the entity manager between pages,
+     * which would leave an entity argument detached.
+     *
+     * @param int|null $carrierId null for every carrier on the install
+     * @return list<Message>
+     */
+    public function findImapCopiesCarried(?int $carrierId, int $afterId, int $limit): array
+    {
+        $qb = $this->createQueryBuilder('m')
+            ->where('m.gmailCarrierAccount IS NOT NULL')
+            ->andWhere('m.mailbox IS NOT NULL')
+            ->andWhere('m.id > :afterId')
+            ->setParameter('afterId', $afterId)
+            ->orderBy('m.id', 'ASC')
+            ->setMaxResults($limit);
+
+        if (null !== $carrierId) {
+            $qb->andWhere('IDENTITY(m.gmailCarrierAccount) = :carrierId')->setParameter('carrierId', $carrierId);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /** How many rows findImapCopiesCarried() would page through. */
+    public function countImapCopiesCarried(?int $carrierId): int
+    {
+        $qb = $this->createQueryBuilder('m')
+            ->select('COUNT(m.id)')
+            ->where('m.gmailCarrierAccount IS NOT NULL')
+            ->andWhere('m.mailbox IS NOT NULL');
+
+        if (null !== $carrierId) {
+            $qb->andWhere('IDENTITY(m.gmailCarrierAccount) = :carrierId')->setParameter('carrierId', $carrierId);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
     public function countForAccount(Account $account): int
     {
         return (int) $this->createQueryBuilder('m')
