@@ -3968,6 +3968,23 @@ settings:
         'off': 'Désactivé'
         'on': 'Activé'
         subheading: Si les images qu’un message charge depuis ailleurs attendent qu’on les demande.
+    swipe_actions:
+        heading: Balayage des lignes
+        hint: >-
+            Un balayage agit dès que vous allez assez loin ou faites un geste rapide.
+            Lu / non lu et étoile se rétablissent en balayant à nouveau, et archiver
+            propose Annuler. La corbeille n’est pas proposée : un balayage qui
+            supprimerait du courrier n’aurait rien pour l’annuler.
+        left:
+            label: Balayer vers la gauche
+        option:
+            archive: Archiver
+            none: Aucune action
+            read_unread: Lu / non lu
+            star: Étoile
+        right:
+            label: Balayer vers la droite
+        subheading: Ce que fait un balayage sur une ligne, sur téléphone.
     whats_new:
         heading: 'Nouveautés'
         'off': 'Désactivé'
@@ -4007,6 +4024,7 @@ settings:
         sharing: Partage
         shortcuts: Raccourcis clavier
         signature: Signatures
+        swipe_actions: Balayage des lignes
         templates: 'Modèles'
     notifications:
         devices:
@@ -4476,6 +4494,9 @@ thread_row:
         unavailable: 'Non envoyé : votre fournisseur était injoignable'
     scheduled: 'Programmé %when%'
     select: Sélectionner
+    sheet:
+        label: Actions pour cette conversation
+        select: Sélectionner
     star: Suivre ce message
     to: 'À : %recipients%'
     unread: Non lu

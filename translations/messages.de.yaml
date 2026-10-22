@@ -3933,6 +3933,24 @@ settings:
         'off': Aus
         'on': An
         subheading: Ob Bilder, die eine Mail von anderswo lädt, erst auf Nachfrage geladen werden.
+    swipe_actions:
+        heading: Wischgesten
+        hint: >-
+            Eine Wischbewegung wirkt, sobald du weit genug ziehst oder schnell
+            wischst. Gelesen/ungelesen und Stern nimmst du zurück, indem du noch
+            einmal wischst. Archivieren bietet „Rückgängig“ an. Den Papierkorb gibt
+            es hier nicht: Eine Wischbewegung, die Mail löscht, hätte nichts, womit
+            sie sich zurücknehmen ließe.
+        left:
+            label: Nach links wischen
+        option:
+            archive: Archivieren
+            none: Nichts
+            read_unread: Gelesen / ungelesen
+            star: Stern
+        right:
+            label: Nach rechts wischen
+        subheading: Was eine Wischbewegung über eine Zeile auf dem Telefon bewirkt.
     whats_new:
         heading: 'Was ist neu'
         'off': 'Aus'
@@ -3972,6 +3990,7 @@ settings:
         sharing: Teilen
         shortcuts: Tastenkürzel
         signature: Signaturen
+        swipe_actions: Wischgesten
         templates: 'Vorlagen'
     notifications:
         devices:
@@ -4468,6 +4487,9 @@ thread_row:
         unavailable: 'Nicht gesendet: dein Mailanbieter war nicht erreichbar'
     scheduled: 'Geplant %when%'
     select: Auswählen
+    sheet:
+        label: Aktionen für diese Unterhaltung
+        select: Auswählen
     star: Diese Nachricht markieren
     to: 'An: %recipients%'
     unread: Ungelesen
