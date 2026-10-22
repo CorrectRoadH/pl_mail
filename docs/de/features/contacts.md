@@ -1,4 +1,4 @@
-<!-- translated-from: features/contacts.md sha1:5f4fbb8cd5a8c2c563c954eae1da9bb9f2361093 -->
+<!-- translated-from: features/contacts.md sha1:713dc966d588067fd0d5ad0abafcfad4a6e76e2e -->
 
 # Kontakte
 
@@ -17,13 +17,19 @@ Ein Konto, das verbunden wurde, bevor plMail Kontakte synchronisiert hat, brauch
 Anmeldung, um sie zu erlauben: **Einstellungen → Kontakte** und **Einstellungen → Zustand der Konten** bieten sie
 beide an.
 
-Du öffnest es über **Kontakte** in der Seitenleiste als ganze Seite, oder über das Adressbuch-Symbol
-neben dem Kalender-Knopf, das es neben der Mail andockt, so wie den Kalender. Das angedockte
-Adressbuch ist das ganze Adressbuch: Du suchst, öffnest, bearbeitest, legst an und führst Kontakte
-dort zusammen, während deine Mail bleibt, wo sie war. Zieh an seinem Rand, um es breiter oder
-schmaler zu machen (oder nimm die Pfeiltasten am Rand; ein Doppelklick stellt es zurück), und plMail
-merkt sich die Breite und ob es offen war. Die Pfeile in seiner Kopfzeile öffnen dieselbe Seite in
-voller Größe, und das × schließt es.
+Du öffnest es mit dem Adressbuch-Symbol neben dem Kalender-Knopf. Wie der Kalender-Knopf schaltet
+es durch drei Stellungen: das Adressbuch neben der Mail, dann in voller Breite mit deiner Mail
+dahinter, dann wieder zu. **Einstellungen → Kontakte → Verhalten** macht daraus zwei Stellungen
+(**Nur volle Breite** oder **Nur neben der Mail**), wie beim Kalender. Auf dem Handy öffnet
+**Kontakte** im Menü die ganze Seite.
+
+Das angedockte Adressbuch ist das ganze Adressbuch: Du suchst, öffnest, bearbeitest, legst an und
+führst Kontakte dort zusammen, während deine Mail bleibt, wo sie war. Zieh an seinem Rand, um es
+breiter oder schmaler zu machen (oder nimm die Pfeiltasten am Rand; ein Doppelklick stellt es
+zurück). Ziehst du es über seine größte Breite hinaus und lässt los, geht es auf volle Breite; über
+seine kleinste hinaus, schließt es sich. plMail merkt sich Breite und Stellung. Die Pfeile in seiner
+Kopfzeile schalten auf volle Breite, und das × schließt es. Öffnest du bei voller Breite eine
+Nachricht aus einem Kontakt, kommt die Mail daneben zurück.
 
 Auf einem breiten Monitor (ab 1920 Pixeln Breite) können Adressbuch und Kalender nebeneinander
 angedockt sein. Auf einem kleineren Bildschirm, etwa dem eines Laptops, ist neben der Mail Platz für
@@ -156,8 +162,23 @@ Kontakte vollständig umzuziehen, nimm vCard.
 
 ## Beim Lesen und Schreiben von E-Mails
 
-Beim Absender einer Nachricht siehst du, ob er schon in deinen Kontakten steht, mit einem Knopf, um
-ihn hinzuzufügen, wenn nicht. Adressierst du eine Nachricht, werden dir deine Kontakte
+Beim Absender einer Nachricht und bei jeder Adresse in ihren Details (An, Cc, Antwort an) siehst du,
+ob sie schon in deinen Kontakten steht, mit einem Knopf, um sie hinzuzufügen, wenn nicht. Der Knopf
+fragt, wer das ist:
+
+- **Neuer Kontakt**: Prüf den Namen aus der E-Mail und speichere. *Weitere Angaben* öffnet den
+  vollen Editor, Name und Adresse sind schon eingetragen.
+- **Zu einem bestehenden Kontakt hinzufügen**: Such beim Tippen in deinen Kontakten und wähl einen
+  aus. Die Adresse kommt zu diesem Kontakt dazu, so bleibt jemand, der von einer zweiten Adresse
+  schreibt, eine Person. Die Suche beginnt mit dem Namen des Absenders. Kontakte in
+  schreibgeschützten Adressbüchern werden nicht angeboten.
+
+Nach dem Speichern öffnet sich der Kontakt im angedockten Adressbuch neben der Mail. War es zu,
+geht es auf, war es offen, springt es zu diesem Kontakt. Auch *Weitere Angaben* öffnet den Editor
+dort. Auf dem Handy wird nichts angedockt: *Weitere Angaben* öffnet den Editor als Seite, und nach
+dem Speichern wird der Knopf zu einem Link auf den Kontakt.
+
+Adressierst du eine Nachricht, werden dir deine Kontakte
 vorgeschlagen, zusammen mit den Adressen, die plMail aus deinen E-Mails kennt. Die Reihenfolge steht
 unter [Vorschläge beim Schreiben](../providers/carddav.md#vorschläge-beim-schreiben).
 

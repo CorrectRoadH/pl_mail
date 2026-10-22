@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Contacts;
 
 use App\Controller\ChecksCsrf;
+use App\Domain\Enum\Contacts\ContactsPaneMode;
 use App\Domain\Exception\ContactReadOnlyException;
 use App\Domain\Helper\AddressHelper;
 use App\Entity\AddressBook\AddressBook;
@@ -105,7 +106,14 @@ final class ContactController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        if (true === $request->request->has('open')) {
+        // `mode` is the switch's position (ContactsPaneMode); `open` the
+        // older yes/no, still what the pane's × and a reveal send. A mode
+        // that is not one of the three is not a choice and is left out.
+        $mode = ContactsPaneMode::tryFrom((string) $request->request->get('mode'));
+
+        if (null !== $mode) {
+            $user->contactsPaneMode = $mode;
+        } elseif (true === $request->request->has('open')) {
             $user->contactsPaneOpen = $request->request->getBoolean('open');
         }
 
@@ -120,6 +128,7 @@ final class ContactController extends AbstractController
 
         return $this->json([
             'open'  => $user->contactsPaneOpen,
+            'mode'  => $user->contactsPaneMode->value,
             'width' => $user->contactsPaneWidth,
         ]);
     }
@@ -198,6 +207,11 @@ final class ContactController extends AbstractController
      * The full editor for a new contact: empty from a link, or holding what
      * quick add found when its "All fields" button posts here. Nothing is
      * saved by this route — the editor's own Save posts to create().
+     *
+     * A GET may carry `name` and `email`: "More details" in the add-to-contacts
+     * dialog (ContactFromMailController) is a link, and starts the editor with
+     * the address it was opened on. A link rather than a post, because Turbo
+     * wants a post answered with a redirect, and this renders.
      */
     #[Route('/new/full', name: 'new_full', methods: ['GET', 'POST'])]
     public function newFull(Request $request): Response
@@ -206,6 +220,11 @@ final class ContactController extends AbstractController
 
         if ([] !== $all) {
             $this->assertCsrf($request, 'contacts_create');
+        } elseif ($request->query->has('email')) {
+            $all = [
+                'displayName' => AddressHelper::name((string) $request->query->get('name')),
+                'emails'      => [['value' => (string) $request->query->get('email'), 'label' => 'other', 'primary' => '1']],
+            ];
         }
 
         return $this->newForm($this->draftContact($all), (string) ($all['addressBook'] ?? ''));
