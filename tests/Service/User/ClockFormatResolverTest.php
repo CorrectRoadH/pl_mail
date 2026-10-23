@@ -58,7 +58,7 @@ final class ClockFormatResolverTest extends TestCase
         self::assertSame(ClockFormat::TwentyFour, $this->resolver()->resolve($german));
         self::assertSame(ClockFormat::Twelve, $this->resolver()->resolve($english));
         self::assertSame(ClockFormat::TwentyFour, $this->resolver()->resolve($french), 'French writes 14 h 00, never 2 PM');
-        self::assertSame(ClockFormat::TwentyFour, $this->resolver()->resolve($chinese));
+        self::assertSame(ClockFormat::TwentyFour, $this->resolver()->resolve($chinese), 'Simplified Chinese writes 14:30, as CLDR does for zh');
     }
 
     /** A user with no locale of their own follows the install's. */

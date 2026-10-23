@@ -544,6 +544,11 @@ test.describe("compose localization", () => {
         await useLocale(page, "en");
     });
 
+    // Symfony writes zh_CN, BCP 47 writes zh-CN, and the emoji picker's data
+    // is filed under plain `zh` — three spellings of one language, so each is
+    // asserted where it is used.
+    // The reload is the point of it: the choice has to come back from the
+    // stored preference, not from the response that just saved it.
     test("the compose window is Chinese after reloading a Chinese UI", async ({ page }) => {
         await useLocale(page, "zh_CN");
         await page.reload();
@@ -566,6 +571,11 @@ test.describe("compose localization", () => {
         for (const name of ["最小化", "增加缩进"]) {
             await expect(dock.getByRole("button", { name, exact: true })).toBeAttached();
         }
+
+        // Emoji search in Chinese: the English data would find nothing for 笑脸.
+        await expect(
+            dock.locator("[data-compose--emoji-picker-data-source-value]").first(),
+        ).toHaveAttribute("data-compose--emoji-picker-data-source-value", /\/emoji\/zh\/data/);
     });
 
     test("the compose window is German in a German UI", async ({ page }) => {
