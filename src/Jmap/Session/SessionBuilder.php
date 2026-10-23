@@ -155,7 +155,7 @@ final class SessionBuilder
                 // property of one account, and every value lives in that
                 // account's entry under the same URN.
                 Capability::SYNC => new \stdClass(),
-                Capability::CONTACTS => $this->contactsCapabilities(),
+                Capability::CONTACTS => $this->contactsCapabilities($base),
                 Capability::TEMPLATES => $this->templatesCapabilities(),
                 Capability::KEYS => $this->keysCapabilities(),
                 Capability::INBOX_TABS => new \stdClass(),
@@ -419,19 +419,6 @@ final class SessionBuilder
     }
 
     /**
-     * The two numbers Contact/autocomplete would otherwise make a client
-     * discover: what it gets when it asks for nothing, and the point past which
-     * a larger "limit" stops making the list longer. Server-wide rather than
-     * per-account, because the address book is the user's and the cap is the
-     * method's.
-     *
-     * Read off the method so there is one place per fact — the same reason the
-     * calendar block below reads RecurrenceMaterialiser's horizon rather than
-     * repeating it.
-     *
-     * @return array<string,mixed>
-     */
-    /**
      * The constants a client needs to open what Keyring/get hands it, the
      * same ones assets/crypto/aead.js and keyring.js use: every wrapping is
      * `v1.<iv>.<ciphertext>` (base64), AES-256-GCM with the purpose string as
@@ -455,9 +442,23 @@ final class SessionBuilder
         ];
     }
 
-    private function contactsCapabilities(): array
+    /**
+     * The two numbers Contact/autocomplete would otherwise make a client
+     * discover: what it gets when it asks for nothing, and the point past which
+     * a larger "limit" stops making the list longer. Server-wide rather than
+     * per-account, because the address book is the user's and the cap is the
+     * method's.
+     *
+     * Read off the method so there is one place per fact — the same reason the
+     * calendar block below reads RecurrenceMaterialiser's horizon rather than
+     * repeating it.
+     *
+     * @return array<string,mixed>
+     */
+    private function contactsCapabilities(string $base): array
     {
         return [
+            'apiUrl' => $base.'/jmap/contacts',
             'maxSuggestions' => ContactAutocompleteMethod::MAX_LIMIT,
             'defaultSuggestions' => ContactAutocompleteMethod::DEFAULT_LIMIT,
         ];

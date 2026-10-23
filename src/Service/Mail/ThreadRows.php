@@ -180,7 +180,7 @@ final class ThreadRows implements ResetInterface
 
             $this->rows[$threadId] = new ThreadRow(
                 $messages,
-                null === $body ? '' : $this->snippet->fromBodies($body['bodyHtmlSafe'], $body['bodyText']),
+                null === $body ? '' : $this->snippet->fromBodies($body['bodyHtmlSafe'], $body['bodyText'], $body['category']),
                 // A thread with no messages has no body row at all, and the
                 // nullsafe operator guards the call, not the offset.
                 null !== $body && true === $body['crypto']?->isEncrypted(),

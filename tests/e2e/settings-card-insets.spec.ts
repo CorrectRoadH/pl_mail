@@ -123,7 +123,9 @@ const SECTIONS = [
     "shortcuts",
     "disposal",
     "images",
+    "swipe-actions",
     "calendar-behaviour",
+    "contacts",
 ] as const;
 
 /**
