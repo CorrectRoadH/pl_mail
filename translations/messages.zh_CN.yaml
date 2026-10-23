@@ -170,6 +170,8 @@ admin:
             token_help_set: 已保存令牌。留空以保留。如果更改上方地址且未填写令牌，将删除已保存的令牌。
             writing_help: 写作辅助
             writing_help_help: 在撰写邮件时，按需提供草稿和改写建议。
+            contact_help: "联系人辅助"
+            contact_help_help: "从粘贴的文本中提取联系人，并根据其最新邮件的签名建议修正联系人信息。使用写作模型，并将该文本发送给模型。"
         heading: 语言模型
         headers:
             summary: 代理或网关所需的额外请求头
@@ -511,6 +513,7 @@ admin:
             redirect_uri_help: 请原样粘贴到服务商控制台。后续更改会使现有连接失效。
             tenant: 租户
             tenant_help: '个人和工作账户使用 common，仅工作账户使用 organizations，或填写租户 ID 以仅限自己的租户。必须与应用注册中支持的账户类型一致。'
+            base_url_help_ics: "留空。每个订阅源都有自己的地址，此处的设置不会改变用户订阅的内容。这里保存的地址仅允许其主机上的订阅源通过私有网络检查。"
         inherit: '复用 %name% 凭据'
         inherit_help: '在服务器端复制客户端 ID 和密钥，密钥不会显示。此操作不会授予服务所需的额外权限；请按设置步骤在服务商处添加。'
         inherited: 凭据已复制
@@ -525,6 +528,11 @@ admin:
             intro: '用户添加邮件账户时登录所用的 OAuth 应用。Google 和 Microsoft 文件集成可复用相同凭据。'
             microsoft: 'Microsoft 邮件登录'
             saved: 邮件登录设置已保存
+            consent_heading: "如果你的组织为用户审批应用"
+            consent_microsoft: "部分 Microsoft 365 组织不允许用户自行批准应用：管理员此前批准 plMail 时，仅授予了当时请求的权限。plMail 现在还请求 Contacts.ReadWrite，原来的批准并未涵盖此权限，因此在重新批准前，Microsoft 会拒绝所有 plMail 登录，包括邮件登录。在用户重新登录前，请打开 Microsoft Entra 管理中心 → 企业应用程序 → plMail → 权限，选择“授予管理员同意”。个人 Microsoft 账户和允许用户自行批准应用的组织不受影响。"
+            contacts_google: "为此项目启用 Google People API，并在同意屏幕中添加 .../auth/contacts 权限范围，用户即可通过同一次登录同步联系人。此前已连接的账户会在设置中被要求重新登录一次。未启用时，邮件和日历仍可正常使用，只是不显示联系人。"
+            contacts_heading: "联系人同步使用同一应用"
+            contacts_microsoft: "为此应用注册添加 Contacts.ReadWrite 委托权限，用户即可通过同一次登录同步 Outlook 联系人。此前已连接的账户会在设置中被要求重新登录一次。未添加时，邮件和日历仍可正常使用，只是不显示联系人。"
         intro: '用户可从这些服务添加文件作为附件，也可将附件保存到这些服务。此处列出所有服务，包括 plMail 暂未支持的服务。'
         not_set: 未设置
         saved: 集成设置已保存
@@ -536,6 +544,7 @@ admin:
             enabled: 已启用
             incomplete: 需要凭据
             unimplemented: 暂不可用
+            always_offered: "向所有人提供"
         tutorial:
             caldav:
                 intro: 'CalDAV 使用每位用户的应用密码，向用户自己的服务器进行验证，因此此处无需注册。'
@@ -543,7 +552,6 @@ admin:
                 security: '用户应创建应用专用密码，而非使用登录密码：应用密码可单独撤销，也可配合双重验证使用。iCloud 和 Fastmail 仅接受应用密码。'
                 step_app_password: '每位用户在自己的服务器上创建应用密码：Nextcloud 位于 Settings → Security，iCloud 位于 appleid.apple.com，Fastmail 位于 Settings → Password & Security；然后粘贴到自己的日历设置中。'
                 step_base_url: '若所有人使用同一服务器，可选填固定服务器地址，例如 https://cloud.example.com。'
-                step_enable: 开启上方的“向用户提供此服务”。
                 step_url: '应输入 CalDAV 地址，而非网页界面地址：Nextcloud 在 Calendar → Settings → “Copy primary CalDAV address”中显示，通常以 /remote.php/dav 结尾。仅输入域名也可，plMail 会向服务器查询日历位置。'
             dropbox:
                 intro: 'Dropbox 需要在 Dropbox 开发者控制台中注册应用。'
@@ -594,8 +602,16 @@ admin:
                 step_base_url: '可选填固定服务器地址，例如 https://paperless.example.com。'
                 step_enable: 开启上方的“向用户提供此服务”。
                 step_token: '每位用户从 Paperless 的 My Profile → API Auth Token 复制 API 令牌，然后粘贴到自己的集成设置中。'
+            ics:
+                intro: "日历订阅源无需在此设置。每位用户可在“设置 → 日历 → 订阅地址”中粘贴日历的发布地址，通常以 .ics 结尾。"
+                security: "对于已发布的日历，地址相当于密码：任何持有该地址的人都能读取日历。"
         tutorial_heading: 设置步骤
         unimplemented_notice: 'plMail 暂不支持连接此服务。可以先注册凭据，支持发布后即可使用。'
+        base_url_exempt: "仅允许此主机上的订阅源通过私有网络检查"
+        calendar:
+            connected_warning: "已有连接：%count%。修改或清空地址后，每个连接下次查找日历时都会使用新设置，因此原本连接其他服务器（如 iCloud）的用户会被要求使用自己的密码连接此服务器。已镜像的日历保留发现时的地址；如果清空的地址属于私有网络，则这些日历会停止同步，直到其主机被加入 INTEGRATIONS_ALLOWED_HOSTS。"
+            heading: "日历"
+            intro: "用户在“设置 → 日历”中镜像日历的服务器和订阅源。两者均向所有人提供；此处可以为所有人设置统一的服务器地址。Nextcloud 在上方的文件服务中设置，连接后也会带入其日历。"
     loading: 加载中…
     maintenance:
         heading: 维护
@@ -1059,6 +1075,9 @@ alias:
     refreshed: 已从服务商刷新。
     status_blocked: 无法停用主地址，请先将其他地址设为主地址。
     status_set: 地址已更新。
+    gmailify_off: "Gmailify 已关闭。此 Gmail 账户仅保留发给它的邮件，其他账户中的副本不再跟随 Gmail 的操作。"
+    gmailify_on: "Gmailify 已开启。此 Gmail 账户为其他账户收取的邮件会归入相应账户。"
+    gmailify_unsupported: "Gmailify 是 Gmail 账户的设置。"
 app:
     name: 邮件
 attachment:
@@ -1081,6 +1100,8 @@ attachment:
         untitled: 附件
         zoom_in: 放大
         zoom_out: 缩小
+        media_failed: "无法在此显示该文件。你仍可下载它。"
+    download_named: "下载 %name%"
 calendar:
     when:
         previous_month: 上个月
@@ -1468,6 +1489,8 @@ calendar:
     toolbar:
         range: '%start% – %end%'
         range_day: '%day%'
+        range_short: "%start%–%end%"
+        range_short_month: "%month% %start%–%end%"
     upcoming:
         imminent: 一小时内开始
         later: 今天稍后
@@ -1478,6 +1501,7 @@ calendar:
         monday_week: 周
         month: 月
         week: '7 天'
+    empty_day: "这一天没有日程"
 clipboard:
     copied: 已复制
     copy_failed: 复制失败
@@ -2154,7 +2178,7 @@ oauth:
     error:
         generic: '无法连接此账户。请重试。'
         microsoft:
-            admin_consent_required: "你的组织要求管理员先批准 plMail，才能连接此账户。请联系 Microsoft\n 管理员授予访问权限。"
+            admin_consent_required: "你的组织要求管理员批准 plMail 后才能连接此账户。如果此前可以连接，这是因为 plMail 现在还请求访问联系人，也需要管理员批准。请联系 Microsoft 管理员授予访问权限。"
             app_not_found: 'plMail 尚未在你的 Microsoft 组织中注册。'
             bad_credentials: 'plMail 的 Microsoft 凭据无效或已过期。这是服务器配置问题，你无法自行解决。'
             blocked_by_policy: '你所在组织的安全策略阻止了此次登录。'
@@ -2405,6 +2429,8 @@ settings:
             summary_hint: '按需概括较长的会话。不会自动生成摘要。'
             writing_help: '帮我写作'
             writing_help_hint: '在撰写窗口中按需起草回复、精简文字、调整为正式表达或校对。'
+            contact_help: "联系人辅助"
+            contact_help_hint: "应你的要求，从粘贴的签名或名片中填写联系人信息，并根据其最新邮件的签名建议更新。"
         features:
             heading: '助手功能'
             subheading: '选择要使用的助手功能。管理员决定哪些功能可用，你决定使用哪些。'
@@ -2425,6 +2451,7 @@ settings:
             search: '建立索引：每封邮件的主题、发件人和开头。'
             summary: '你要求生成摘要的会话中的邮件'
             writing_help: '写作：邮件主题、你已输入的内容，以及上方设置允许读取的会话内容。'
+            contact_help: "联系人：应你的要求，读取粘贴的文本，或联系人及其最新邮件的签名。"
         seg:
             off: '关闭'
             on: '开启'
@@ -2517,6 +2544,11 @@ settings:
         refresh: '从服务商刷新'
         subheading: '此账户用于收发邮件的地址。'
         system: '系统'
+        gmailify:
+            hint: "适用于从你在此连接的其他地址收取邮件的 Gmail 账户。开启后，这些邮件归入相应账户，该账户中的副本会跟随你在 Gmail 中的操作。关闭后，此账户仅保留发给自己的邮件，其他账户中的副本不再跟随 Gmail。建议在 Gmail 不再收取这些邮件后关闭：如果仍在收取，密送至其他地址的邮件不会列出收件人，因此此处和其他账户都会保留一份。"
+            label: "将其他账户的邮件归入相应账户（Gmailify）"
+            off: "关闭"
+            on: "开启"
     clock:
         heading: '时钟'
         subheading: '选择使用十二小时制或二十四小时制，以及当前时间的显示位置。存储方式不变，只改变显示的数字。'
@@ -2961,6 +2993,9 @@ settings:
             queue_work_abandoned:
                 body: '%count% 个后台任务多次尝试失败后被搁置，以停止重试。这通常是上方某个问题的后果，而非独立故障。请先解决该问题，再将这些任务重新加入队列。'
                 title: '%count% 个后台任务已被放弃'
+            account_contacts_scope_missing:
+                body: "plMail 现在可以同步此账户的联系人，但连接 %account% 时尚未请求联系人权限。邮件和日历不受影响。请重新登录一次并允许访问联系人，其通讯录就会出现在“联系人”中。"
+                title: "重新连接 %account% 以同步联系人"
         outcome:
             calendar_failed_again: '同步再次失败。本次返回的信息如下：同步确实运行了，但未成功。'
             calendar_still_waiting: '同步已启动，但尚未返回结果。请重试，或重新加载页面查看进展。'
@@ -3000,6 +3035,9 @@ settings:
             reconnect:
                 label: '重新连接此账户'
                 promise: '前往重新登录，再将新的登录授权关联到同一个账户。邮件、文件夹、标签、过滤器、日历和设置都会原样保留，不会重新下载或删除任何内容。你必须以 %account% 登录；如选择其他地址，系统会拒绝，不会替换账户。'
+            grant_contacts:
+                label: "允许访问联系人"
+                promise: "前往服务商页面，以 %account% 登录并允许访问联系人。邮件不会改变，也不会重新下载。"
         reconnect:
             done: '%account% 已重新连接。邮件和日历会在接下来几分钟内完成补充同步。'
             wrong_account: '你刚才以 %actual% 登录，但此账户是 %expected%。未作任何更改。请先在该服务商退出 %actual%，然后重试；替换地址会将另一个邮箱的内容混入此邮箱。'
@@ -3100,6 +3138,7 @@ settings:
         test_failed: '连接测试失败'
         test_ok: '连接正常'
         unavailable_heading: '此处不可用'
+        disconnect_confirm_mirrored: "断开 %name%？从中镜像的 %calendars% 个日历和 %books% 个通讯录也会从此处移除；来自邮件的日程会先移至默认日历。已附加到邮件的文件不受影响。"
     calendar_behaviour:
         button: '日历按钮'
         button_hint: '顶栏按钮循环切换的视图。未包含的视图不会被移除，仍可通过拖动手柄访问。'
@@ -3157,6 +3196,8 @@ settings:
             why_consent: 'Google 的授权同意屏幕允许保留邮件访问权限，同时取消日历访问权限。请重新连接账户，并保持勾选日历权限。'
             why_empty: '没有显示日历？'
             why_none: '此账户可能本来就没有日历。'
+            managed: "在“集成”中设置"
+            managed_hint: "%name% 还存储着你的文件。请在“设置 → 集成”中断开连接。"
         subheading: '设置名称、颜色、时区、视图中显示的日历，以及新日程的存放位置。'
         subscribe:
             default_locked: '新日程会存放在这里，因此不能取消。请先将其他日历设为默认。'
@@ -3167,6 +3208,7 @@ settings:
             save: '保存订阅'
             title: '查找我的日历'
             unsubscribe_note: '取消勾选会删除此处保存的日历副本。其中来自邮件而非日历本身的日程，会先移到默认日历。'
+            mirrored_elsewhere: "已通过 %name% 镜像"
         sync_now: '立即同步“%name%”'
         sync_now_title: '立即同步'
     labels:
@@ -3239,6 +3281,8 @@ settings:
         shortcuts: '键盘快捷键'
         signature: '签名'
         templates: '模板'
+        contacts: "联系人"
+        swipe_actions: "滑动操作"
     notifications:
         devices:
             empty: '尚未注册任何设备。开启上方通知会注册此浏览器；手机应用会自行注册。'
@@ -3273,6 +3317,9 @@ settings:
         toggle: '启用通知'
         toggle_off: '停用通知'
         unconfigured: '此服务器尚未配置推送，未设置 VAPID 密钥。请运行 "bin/console app:push:generate-vapid-keys"。'
+        error_server: "服务器拒绝了此设备（%error%）。请重试；如果问题持续，请联系管理员。"
+        error_subscribe: "浏览器推送服务未向此设备提供地址（%error%）。如果使用 Brave，请先开启“使用 Google 服务进行推送消息传递”。"
+        error_worker: "plMail 的后台工作线程未启动（%error%）。请重试；如果问题持续，请联系管理员。"
     password:
         field:
             current: '当前密码'
@@ -3519,6 +3566,75 @@ settings:
             d: '天'
             m: '月'
             w: '周'
+    contacts_behaviour:
+        button: "联系人按钮"
+        button_hint: "顶栏按钮依次切换哪些视图。未包含的视图不会被移除，仍可通过拖动手柄切换到该视图。"
+        heading: "行为"
+        option_contacts: "仅在邮件旁显示"
+        option_none: "全部三种"
+        option_split: "仅全宽显示"
+        subheading: "顶栏联系人按钮如何切换视图。"
+    contacts:
+        allow_contacts: "允许访问联系人"
+        allow_contacts_hint: "连接时 plMail 尚未请求联系人权限。请重新登录一次并允许访问，其通讯录就会出现在这里。"
+        allow_contacts_microsoft: "如果你的组织为用户审批应用，请先让管理员批准 plMail 的联系人权限。在批准前，Microsoft 会拒绝此次登录。"
+        carddav:
+            connect: "连接 CardDAV 服务器"
+            disconnect: "断开“%name%”"
+            disconnect_confirm: "断开“%name%”？从中镜像的所有通讯录及尚未发送到服务器的更改都会从此处移除。服务器上的联系人不会改变。"
+            field:
+                address: "服务器地址"
+                address_help: "服务器提供的 CardDAV 地址，也可以只填写域名；plMail 会先向该域名查询通讯录位置，再判定是否无法连接。"
+                name: "名称"
+                name_help: "此连接在设置中显示的名称。"
+                reuse: "使用某个邮件账户的密码"
+                reuse_account: "使用哪个账户的密码"
+                reuse_account_none: "选择账户…"
+                reuse_help: "默认关闭，建议保持关闭：大多数服务器需要应用专用密码，勾选后会将你为邮箱提供给 plMail 的密码发送到上述地址。"
+                secret: "应用密码"
+                secret_help: "请在服务器上创建应用密码，不要使用登录密码；iCloud 和 Fastmail 仅接受应用密码。"
+                username: "用户名"
+                username_help: "你在该服务器上的账户名。"
+            intro: "支持任何 CardDAV 服务器：Nextcloud、Radicale、Baïkal、Fastmail、iCloud。通常与日历使用相同的地址和应用密码。"
+            submit: "连接并查找通讯录"
+            title: "连接 CardDAV 服务器"
+        empty: "尚未连接联系人服务器。"
+        find: "选择通讯录"
+        heading: "联系人"
+        intro: "从 CardDAV 服务器镜像的通讯录。写信时会推荐其中的联系人，在此所做的更改会同步回服务器。"
+        never_synced: "尚未同步"
+        no_books: "尚未从此服务器选择通讯录。"
+        open: "打开联系人"
+        read_only: "只读"
+        subheading: "通讯录的来源。"
+        subscribe:
+            empty: "“%name%”未提供任何通讯录。"
+            intro: "选择要从“%name%”镜像到 plMail 的通讯录。"
+            mirrored: "已镜像"
+            mirrored_elsewhere: "已通过 %name% 镜像"
+            save: "保存"
+            title: "选择通讯录"
+            unsubscribe_note: "取消勾选通讯录会移除此处的副本，包括尚未发送的更改。服务器上的副本会保留。"
+        sync_now: "立即同步“%name%”"
+        synced: "同步于 %date%"
+        toast:
+            disconnected: "联系人服务器已断开"
+            saved: "通讯录已保存"
+            sync_queued: "同步已排队"
+            unchanged: "没有更改"
+    swipe_actions:
+        heading: "滑动操作"
+        hint: "拖动足够远或快速轻扫时触发操作。再次滑动可撤销已读状态和星标操作，归档后也可选择撤销。不提供删除选项，因为滑动删除邮件后将无法撤销。"
+        left:
+            label: "向左滑动"
+        option:
+            archive: "归档"
+            none: "无操作"
+            read_unread: "已读 / 未读"
+            star: "星标"
+        right:
+            label: "向右滑动"
+        subheading: "在手机上滑动邮件行时执行的操作。"
 shortcuts:
     groups:
         actions: '邮件操作'
@@ -3686,6 +3802,9 @@ thread_row:
     unread: '未读'
     unstar: '移除此邮件的星标'
 
+    sheet:
+        label: "此会话的操作"
+        select: "选择"
 toast:
     archived: '会话已归档。'
     categorised: '已移至 %category%'
@@ -3724,6 +3843,7 @@ toolbar:
         snooze: '稍后提醒'
         spam: '标为垃圾邮件'
         star: '加星标'
+        not_spam: "不是垃圾邮件"
     purge_confirm:
         one: '永久删除此会话？此操作无法恢复，邮件服务器上的对应内容也会被删除。'
         many: '永久删除这 %count% 个会话？此操作无法恢复，邮件服务器上的对应内容也会被删除。'
@@ -3850,3 +3970,307 @@ whats_new:
     screenshot_close: '关闭截图'
     screenshot_open: '查看完整尺寸的截图'
     title: '更新内容'
+contacts:
+    add_address: "添加地址"
+    add_custom: "添加字段"
+    add_date: "添加日期"
+    add_email: "添加电子邮件"
+    add_im: "添加聊天地址"
+    add_phone: "添加电话"
+    add_relation: "添加关联人"
+    add_to_address_book: "添加到联系人"
+    add_url: "添加网站"
+    back: "返回"
+    book_all: "所有通讯录"
+    book_local: "未同步"
+    cancel: "取消"
+    check_carefully: "请仔细核对"
+    city: "城市"
+    company: "公司"
+    confidence: "匹配度 %pct%%"
+    count: "{0}没有联系人|{1}1 位联系人|]1,Inf[ %count% 位联系人"
+    country: "国家或地区"
+    created: "联系人已创建。"
+    custom_label_placeholder: "字段名称"
+    custom_value_placeholder: "值"
+    date_full: "%year%年%month%%day%日"
+    date_no_year: "%month%%day%日"
+    day: "日"
+    delete: "删除"
+    delete_confirm: "删除 %name%？该联系人将移至回收站，并在 90 天后永久删除。"
+    deleted_contact: "（已删除的联系人）"
+    display_name: "姓名"
+    duplicates: "重复联系人"
+    duplicates_count: "{1}1 组可能重复的联系人|]1,Inf[ %count% 组可能重复的联系人"
+    duplicates_none: "未发现重复联系人。新导入的联系人会自动检查。"
+    edit: "编辑联系人"
+    email_placeholder: "name@example.com"
+    empty: "尚无联系人。添加第一位联系人，或从 vCard 或 CSV 文件导入。"
+    empty_search: "没有匹配的联系人。"
+    export_vcf: "导出为 vCard"
+    field:
+        birthday: "生日"
+        company: "公司"
+        department: "部门"
+        familyName: "姓"
+        givenName: "名"
+        jobTitle: "职位"
+        middleName: "中间名"
+        namePrefix: "前缀"
+        nameSuffix: "后缀"
+        nickname: "昵称"
+        officeLocation: "办公室"
+        phoneticCompany: "公司（注音）"
+        phoneticFamilyName: "姓（注音）"
+        phoneticGivenName: "名（注音）"
+        phoneticMiddleName: "中间名（注音）"
+    im_placeholder: "账号或地址"
+    im_service:
+        aim: "AIM"
+        googleTalk: "Google Talk"
+        icq: "ICQ"
+        matrix: "Matrix"
+        msn: "MSN"
+        other: "其他"
+        qq: "QQ"
+        sip: "SIP"
+        skype: "Skype"
+        teams: "Teams"
+        xmpp: "XMPP (Jabber)"
+        yahoo: "Yahoo"
+    im_service_label: "服务"
+    import: "导入"
+    import_bad_format: "只能导入 .vcf/.vcard 和 .csv 文件。"
+    import_choose: "选择文件"
+    import_confirm: "导入 %count% 位联系人"
+    import_dedupe_note: "导入后将进入重复联系人页面，可合并重复导入的内容。"
+    import_expired: "暂存的导入已过期。请重新上传文件。"
+    import_formats: ".vcf、.vcard 或 .csv"
+    import_hint: "支持 .vcf/.vcard 格式的通讯录导出文件或 .csv 文件。导入后会检查重复联系人。"
+    import_no_file: "未上传文件。"
+    import_preview_count: "在 %format% 文件中找到 %count% 位联系人。以下显示前几位："
+    import_step1: "第 1 步 — 选择文件"
+    import_step2: "第 2 步 — 预览"
+    import_upload: "上传并预览"
+    import_uploading: "正在上传…"
+    imported: "已导入 %count% 位联系人。"
+    in_address_book: "已在联系人中"
+    keep_this: "保留此联系人"
+    label: "标签"
+    label_home: "家庭"
+    label_mobile: "手机"
+    label_other: "其他"
+    label_work: "工作"
+    labels:
+        anniversary: "纪念日"
+        assistant: "助理"
+        blog: "博客"
+        brother: "兄弟"
+        child: "子女"
+        father: "父亲"
+        friend: "朋友"
+        home: "家庭"
+        manager: "经理"
+        mobile: "手机"
+        mother: "母亲"
+        other: "其他"
+        parent: "父母"
+        partner: "伴侣"
+        profile: "个人资料"
+        relative: "亲属"
+        sibling: "兄弟姐妹"
+        sister: "姐妹"
+        spouse: "配偶"
+        work: "工作"
+    merge: "合并"
+    merge_pick_keep: "请先选择要保留的联系人。"
+    merge_read_only: "只读通讯录中的联系人无法合并。"
+    merge_undo: "撤销"
+    merge_undo_expired: "此次合并的 90 天撤销期限已过。"
+    merge_undone: "已撤销合并。"
+    merged: "联系人已合并。你可以在下方列表中撤销。"
+    merged_into: "已将 %count% 位联系人合并到 %name%"
+    month: "月"
+    months:
+        1: "1月"
+        2: "2月"
+        3: "3月"
+        4: "4月"
+        5: "5月"
+        6: "6月"
+        7: "7月"
+        8: "8月"
+        9: "9月"
+        10: "10月"
+        11: "11月"
+        12: "12月"
+    nav: "联系人"
+    new: "新建联系人"
+    next: "下一页"
+    no_details: "尚无联系信息。"
+    no_subject: "（无主题）"
+    notes: "备注"
+    page: "第 %page% 页"
+    pane:
+        close: "关闭联系人"
+        mode:
+            contacts: "全宽显示联系人"
+            mail: "隐藏联系人"
+            split: "在邮件旁显示联系人"
+        resize: "调整联系人区域大小"
+    pending: "等待发送到服务器"
+    phone_placeholder: "+1 555 010 2030"
+    phonetic: "注音"
+    photo_hint: "JPG、PNG 或 WebP，最大 5 MB。"
+    photo_invalid: "无法使用该照片。请使用不超过 5 MB 的 JPG、PNG 或 WebP。"
+    photo_remove: "移除照片"
+    photo_removed: "照片已移除。"
+    photo_upload: "上传照片"
+    photo_uploaded: "照片已更新。"
+    postcode: "邮政编码"
+    prev: "上一页"
+    primary: "首选"
+    primary_short: "首选"
+    recent_merges: "最近的合并"
+    reference_emails: "往来邮件"
+    reference_emails_empty: "尚未与此联系人有邮件往来。"
+    reference_emails_hint: "与此联系人之间尚未删除的所有邮件，包括收件箱、已发送、草稿、回收站和标签中的邮件。"
+    region: "地区"
+    rel_assistant: "助理"
+    rel_manager: "经理"
+    rel_partner: "伴侣"
+    rel_related: "相关"
+    related: "关联联系人"
+    relation_placeholder: "姓名"
+    remove: "移除"
+    save: "保存"
+    save_to: "保存到"
+    save_to_book_hint: "保存到 %server% 上的 %book%，并同步至所有同步该通讯录的设备。"
+    save_to_hint: "同步通讯录中的联系人会发送到其服务器，再同步至所有同步该通讯录的设备。"
+    save_to_local: "plMail"
+    save_to_local_hint: "仅保存在 plMail 中。"
+    search: "搜索联系人"
+    search_placeholder: "搜索姓名、公司或电子邮件…"
+    section_addresses: "地址"
+    section_custom: "自定义字段"
+    section_dates: "日期"
+    section_details: "详细信息"
+    section_emails: "电子邮件"
+    section_ims: "聊天"
+    section_name: "姓名"
+    section_notes: "备注"
+    section_phones: "电话"
+    section_relations: "关联人"
+    section_urls: "网站"
+    section_work: "工作"
+    street: "街道"
+    synced_read_only: "只读，来自 %server% 上的 %book%"
+    synced_with: "与 %server% 上的 %book% 同步"
+    tag_all: "全部"
+    tags: "标签"
+    tags_placeholder: "以逗号分隔，例如：家人,供应商"
+    title: "联系人"
+    trashed: "联系人已移至回收站。"
+    updated: "联系人已保存。"
+    url_placeholder: "https://"
+    validation:
+        name_required: "请填写联系人的姓名。"
+    year_optional: "年份（可选）"
+    editor:
+        add: "添加"
+        add_email: "添加电子邮件地址"
+        add_phone: "添加电话号码"
+        address: "地址"
+        adds: "新增"
+        ai_failed: "AI 未响应。请稍后重试。"
+        ai_nothing: "AI 没有建议。"
+        ai_running: "正在询问 AI…将向其发送此联系人及其最新邮件的签名。"
+        ai_sent: "已将此联系人及其 %date% 邮件的签名发送到管理员配置的 AI 服务。应用建议前不会更改任何内容。"
+        ai_sent_no_mail: "已将此联系人发送到管理员配置的 AI 服务。没有找到此联系人带签名的邮件。应用建议前不会更改任何内容。"
+        ai_title: "AI 建议"
+        applied: "已添加到表单并高亮显示：%count% 项。点击“保存”前不会保存任何内容。"
+        apply_many: "应用 %count% 项信息"
+        apply_none: "没有可应用的内容"
+        apply_one: "应用 1 项信息"
+        auto_label: "根据输入内容推测了类型。选择一种类型可将其固定。"
+        close_panel: "关闭"
+        dates: "日期"
+        dirty_many: "%count% 项未保存的更改"
+        dirty_one: "1 项未保存的更改"
+        discard: "放弃"
+        edit_parts: "编辑姓名各部分"
+        email: "电子邮件"
+        email_invalid: "这似乎还不是有效的电子邮件地址。"
+        fills: "填充空字段"
+        fix_emails: "请修正标红的电子邮件地址后再保存。"
+        hide_parts: "隐藏姓名各部分"
+        improve: "使用 AI 改进"
+        more_work: "部门、办公室、注音名称"
+        name_placeholder: "姓名"
+        new_hint: "新联系人。填写所需信息后即可保存。"
+        note: "备注"
+        nothing_found: "尚未在此文本中找到联系信息。"
+        parts_stale: "姓名与其各部分已不一致。"
+        paste: "粘贴信息"
+        paste_placeholder: "粘贴签名、地址或 vCard。应用前不会更改任何内容。"
+        paste_title: "粘贴签名、vCard 或地址"
+        person: "关联人"
+        phone: "电话"
+        preferred: "首选"
+        reading: "正在读取…"
+        relabels: "将类型从 %from% 改为 %to%"
+        remove_what: "移除%what%"
+        replaces: "替换“%value%”"
+        same: "已存在"
+        split_again: "重新拆分姓名"
+        summary_conflict: "%count% 项与现有内容不同"
+        summary_new: "%count% 项新增内容"
+        summary_same: "%count% 项已存在"
+        website: "网站"
+    from_mail:
+        add_to: "添加到 %name%"
+        existing: "添加到现有联系人"
+        more_details: "更多信息"
+        name: "姓名"
+        new: "新建联系人"
+        no_matches: "没有匹配的联系人。"
+        save: "保存"
+        search: "搜索联系人"
+        title: "添加到联系人"
+    quick:
+        ai_ask: "部分内容不够明确。AI 通常可以识别这类签名。"
+        ai_ask_complete: "看起来已完整。你仍可以让 AI 检查。"
+        ai_disclosure: "仅将此文本发送到管理员配置的 AI 服务。创建联系人前不会保存任何内容。"
+        ai_running: "正在询问 AI…"
+        ai_undo: "撤销 AI 更改"
+        ai_undo_ask: "不是你想要的结果？恢复为规则识别出的内容。"
+        all_fields: "所有字段"
+        box_hint: "输入时自动识别。下方每一行都可取消勾选、重新输入或更改类型。"
+        box_label: "输入或粘贴有关此人的信息"
+        box_placeholder: "姓名、邮件签名、Mia Hoffmann <mia@example.net> 这样的内容，或 vCard"
+        change_type: "更改信息类型"
+        create: "创建联系人"
+        detail_ai: "更改已标记。创建联系人前可取消勾选或修正任何内容。"
+        detail_ai_same: "AI 未发现需要更改的内容。"
+        detail_rules: "每一行均已归入相应字段。"
+        detail_unsure: "尚未归类：%count% 项"
+        detail_vcard: "直接读取了全部 %count% 个字段，未进行推测。"
+        done_parts: "完成"
+        existing: "%name% 已有 %email%。"
+        fix_parts: "修正"
+        ignore: "忽略"
+        keep: "保留"
+        no_name: "需要姓名"
+        open_existing: "打开该联系人"
+        skipped: "已作为问候语忽略：%lines%"
+        source_ai: "由 AI 改进"
+        source_rules: "按规则识别"
+        source_vcard: "vCard"
+        summary_many: "%name%，包含 %count% 项信息"
+        summary_name: "%name%，仅姓名"
+        summary_none: "输入或粘贴有关此人的信息以开始。"
+        summary_one: "%name%，包含 1 项信息"
+        unsure_many: "这些行应归入哪里？"
+        unsure_one: "这一行应归入哪里？"
+        use_as: "用作…"
+        you_placed: "此行由你归类"

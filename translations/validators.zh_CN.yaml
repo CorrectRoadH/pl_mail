@@ -35,3 +35,9 @@ admin.ai.headers.value: '请求头的值不能为空，不能包含换行或其�
 admin.ai.headers.reserved: '这些请求头中有一项由 plMail 自行设置，不能覆盖，例如 Host、Content-Type、Content-Length、Connection。'
 admin.ai.headers.duplicate: '同一个请求头被填写了两次。'
 admin.ai.headers.too_many: '最多可添加 %max% 个额外请求头。'
+carddav:
+    address_required: "请输入 CardDAV 服务器地址，否则 plMail 无法查找通讯录。"
+    username_required: "请输入你在 CardDAV 服务器上的用户名。"
+contacts:
+    invalid_email: "“%email%”不是有效的电子邮件地址。"
+    name_or_email_required: "请填写联系人的姓名或至少一个电子邮件地址。"
