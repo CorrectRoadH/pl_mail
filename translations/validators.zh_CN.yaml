@@ -41,3 +41,6 @@ carddav:
 contacts:
     invalid_email: "“%email%”不是有效的电子邮件地址。"
     name_or_email_required: "请填写联系人的姓名或至少一个电子邮件地址。"
+settings.password.keys_not_rewrapped: "无法将你的加密密钥转为由新密码保护。请重新加载页面后重试。"
+settings.password.malformed: "浏览器发送了 plMail 无法识别的内容。请重新加载页面后重试。"
+settings.password.needs_script: "更改密码需要 JavaScript，发送任何内容前会先在浏览器中保护密码。"

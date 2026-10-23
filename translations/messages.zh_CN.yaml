@@ -1038,7 +1038,7 @@ admin:
             name_first: 名
             name_last: 姓
             password: 初始密码
-            password_help: '仅在创建账户时设置一次。此后无法在这里更改：忘记密码时，需在服务器控制台运行 `app:user:password` 重置。'
+            password_help: "一次性密码：用户首次登录时会选择自己的密码。忘记密码后，可在服务器控制台使用 `app:user:password` 重置。"
         flash:
             deactivated: 已停用。重新启用前，该用户无法登录。
             demote_last_refused: 这是最后一位管理员，因此复选框保持原样；请先将其他用户设为管理员。
@@ -1057,6 +1057,7 @@ admin:
         two_factor_short: 2FA
     version:
         hint: 此部署当前运行的构建，包括发布版本及其来源提交。
+        copy: "复制构建版本 %version%"
 all_mail:
     empty: 除垃圾邮件和废纸篓外，没有邮件。
 alias:
@@ -1637,6 +1638,7 @@ compose:
         saved: 草稿已保存
         saving: 正在保存…
         uploading: 正在上传…
+        sealing: "正在加密…"
     upload:
         failed: 上传失败
         images_only: 邮件正文中只能插入图片
@@ -1657,7 +1659,6 @@ compose:
     discard: 删除草稿
     empty_draft: （空草稿）
     encrypt: 加密邮件
-    encrypt_unavailable: 暂不支持加密。
     expand: 展开
     formatting: 格式选项
     forward: 转发
@@ -1732,6 +1733,29 @@ compose:
         saved: 已保存为模板“%name%”。可在设置中重命名或移动。
         search: 查找模板
         untitled: 未命名模板
+    crypto:
+        encrypt: "加密"
+        sign: "签名"
+        encrypted: "已加密"
+        encrypted_hint: "此邮件将进行端到端加密：只有你和收件人能够阅读。"
+        has_key: "plMail 已有此地址的密钥，可以向其发送加密邮件。"
+        has_certificate: "plMail 已有此地址的 S/MIME 证书，可以向其发送加密邮件。"
+        key_changed: "此地址的新密钥正在“设置 → 加密”中等待接受。在此之前仍使用已知密钥。"
+        partial: "无法向 %emails% 发送加密邮件，因此此邮件将以未加密形式发送给所有收件人。"
+        partial_blocked: "无法向 %emails% 发送加密邮件。请移除这些收件人，或关闭此邮件的加密。"
+        missing: "没有 %emails% 的密钥。请移除这些收件人，或关闭此邮件的加密。"
+        locked: "你的密钥在此浏览器中已锁定。请在“设置 → 加密”中解锁，或关闭此邮件的加密。"
+        locked_not_saved: "未保存：此草稿已加密，但你的密钥在此浏览器中已锁定。"
+        locked_draft: "此草稿已加密，但你的密钥在此浏览器中已锁定。请在“设置 → 加密”中解锁后继续撰写。"
+        failed_draft: "无法打开此加密草稿。"
+        no_own_key: "你没有此发件地址的密钥，无法从该地址发送签名或加密邮件。"
+        no_own_certificate: "你没有此发件地址的 S/MIME 证书，因此无法使用 S/MIME 对此邮件签名或加密。"
+        failed: "无法加密此邮件。未发送任何内容。"
+        sealed_attachment: "已加密：邮件发送前，只有你能够打开。"
+    seal:
+        refused: "加密邮件未完整送达。未发送任何内容，请重试。"
+        keys_changed: "撰写期间，一位收件人的密钥发生了变化。未发送任何内容，请重新发送。"
+        unbuilt: "此草稿已加密，只能从已解锁密钥的浏览器发送。"
 demo:
     bar:
         title: 演示
@@ -2046,6 +2070,10 @@ login:
         password: '密码'
         remember_me: '保持登录状态'
         submit: '登录'
+        needs_script: "登录需要 JavaScript：发送任何内容前，浏览器会先保护你的密码。"
+        prelogin_failed: "无法连接服务器以完成登录。请检查网络连接后重试。"
+        prelogin_rate_limited: "此处发起的登录尝试过多。请几分钟后重试。"
+        submitting: "正在登录…"
     oidc:
         button: '通过单点登录登录'
         button_named: '通过 %provider% 登录'
@@ -2164,6 +2192,53 @@ message:
             body: '此邮件已被归为垃圾邮件。其中的链接和图片存在风险，请像对待陌生人的请求一样谨慎对待其中的要求。'
             title: '此邮件位于垃圾邮件中'
 
+    crypto:
+        attached_key:
+            heading: "已附上发件人的密钥"
+            own: "已附上你的公钥"
+            keep: "保存此密钥"
+            accept: "改用此密钥"
+            none_hint: "plMail 尚未保存此密钥。保存后可验证发件人的签名，并向其发送加密邮件。请与发件人核对指纹，以确认密钥确实属于对方。"
+            changed_hint: "此密钥与 plMail 已知的发件人密钥不同。它可能是对方的新密钥，也可能来自冒充者。使用前请与发件人核对指纹。"
+            kept: "已保存发件人的密钥。"
+            kept_changed: "已保存，但它与 plMail 已知的发件人密钥不同。使用前请核对指纹。"
+            unusable: "无法保存此密钥：已撤销、已过期，或没有与发件人地址对应的用户标识。"
+        subject: "主题：%subject%"
+        encrypted_kept: "接收时已加密 · 在此服务器上以可读形式保存"
+        sealed_draft: "加密草稿。打开后可继续撰写，只有持有你的密钥的浏览器能够读取。"
+        sending: "已加密，正在发送。发送完成后即可在此打开。"
+        action:
+            accept: "使用新密钥"
+            lookup: "查找密钥"
+            manage: "联系人密钥"
+            trust: "信任此密钥"
+        compare_hint: "信任前，请通过电话或当面与发件人核对指纹。"
+        key_changed_hint: "它可能是发件人的新密钥，也可能来自冒充者。使用前请与发件人核对指纹。"
+        decrypting: "正在解密…"
+        encrypted: "已端到端加密"
+        encrypted_smime: "已使用 S/MIME 加密"
+        failed: "无法解密此邮件。"
+        inner:
+            invalid: "内部签名不匹配"
+            key_changed: "使用密钥 %signer% 签名，与 plMail 已知的发件人密钥不同"
+            unchecked: "加密内容内部带有签名，尚未验证"
+            unknown_key: "使用 plMail 尚未知晓的密钥 %signer% 签名"
+            untrusted: "加密内容内部带有签名，内容完整，但尚无人确认密钥 %signer%"
+            valid: "加密内容内部使用你自己的密钥或你已验证的密钥签名"
+        locked: "你的密钥在此浏览器中已锁定。"
+        no_key: "此邮件使用了你在此处没有的密钥进行加密。"
+        no_source: "此邮件的原始内容不可用，因此无法解密。"
+        open_settings: "解锁密钥"
+        signed:
+            invalid: "签名不匹配：此邮件已被更改，或并非来自该发件人"
+            key_changed: "签名使用的密钥与 plMail 已知的发件人密钥不同"
+            pending: "已签名，正在验证签名…"
+            unknown_key: "使用 plMail 尚未知晓的密钥签名"
+            untrusted: "已签名，邮件内容完整，但无法确认签名者身份"
+            valid: "已签名，且签名验证通过"
+        signer: "签名者：%signer%"
+        smime_unreadable: "此邮件使用 S/MIME 加密，但 plMail 没有对应证书。请在“设置 → 加密”中导入证书，或使用持有该证书的邮件客户端打开。"
+        smime_unsupported: "此邮件使用了 plMail 无法解密的算法，目前仅支持 AES。"
 mercure:
     status:
         connected: '实时更新已启用'
@@ -2571,6 +2646,7 @@ settings:
         qr_alt: '配对码'
         expires: '于 %time% 过期。'
         open_in_app: '在应用中打开'
+        with_keys: "密钥会一同传输，加密邮件可立即在应用中打开。"
     app_passwords:
         copy: '复制'
         copy_now: '这是你的新应用密码'
@@ -3283,6 +3359,7 @@ settings:
         templates: '模板'
         contacts: "联系人"
         swipe_actions: "滑动操作"
+        encryption: "加密"
     notifications:
         devices:
             empty: '尚未注册任何设备。开启上方通知会注册此浏览器；手机应用会自行注册。'
@@ -3333,6 +3410,7 @@ settings:
         remember_me_note: '更改密码会让除当前浏览器外所有保持登录的浏览器退出登录。因此，设备遗失后更改密码很有必要。'
         subheading: '用于登录的密码。只有你能更改，管理员也无法代为设置。'
         submit: '更改密码'
+        submitting: "正在保存…"
     reading_pane:
         heading: '阅读面板'
         hint: '关闭时，列表与邮件分别显示。选择“右侧”后，窗口空间足够时，邮件会显示在列表旁；拖动中间的分隔线可调整两侧宽度。'
@@ -4274,3 +4352,316 @@ contacts:
         unsure_one: "这一行应归入哪里？"
         use_as: "用作…"
         you_placed: "此行由你归类"
+contact_keys:
+    heading: "联系人密钥"
+    subheading: "plMail 用于验证联系人签名的公钥；当 plMail 支持发送加密邮件后，也会使用这些公钥进行加密。"
+    loading: "正在加载联系人密钥…"
+    empty: "尚无密钥。plMail 会从签名邮件中收集密钥；你也可以在上方查找或导入。"
+    verified: "已验证"
+    first_seen: "首次发现于 %date%"
+    last_seen: "最近发现于 %date%"
+    expires: "于 %date% 到期"
+    origin:
+        attached: "邮件附件"
+        autocrypt: "来自邮件的 Autocrypt 标头"
+        keyserver: "来自密钥服务器 %host%"
+        manual: "由你导入"
+        wkd: "来自域名的密钥目录（WKD）"
+    pin: "标记为已验证"
+    unpin: "移除验证标记"
+    accept: "改用此密钥"
+    remove: "移除"
+    confirm_remove: "移除此密钥？在 plMail 再次找到它之前，无法验证使用它生成的签名。"
+    changed_warning: "此地址出现了不同的密钥。它可能是联系人的新密钥，也可能来自冒充者。在你与联系人核对指纹并接受新密钥之前，plMail 会继续使用已知密钥。"
+    pinned: "已标记为已验证。"
+    accepted: "此地址现在使用此密钥。"
+    removed: "密钥已移除。"
+    preferences_saved: "已保存。"
+    not_found: "该密钥已不存在。"
+    signer_unknown: "plMail 没有生成此签名的密钥。请先查找或导入。"
+    certificates:
+        heading: "联系人的 S/MIME 证书"
+        hint: "从联系人的签名邮件中收集。当所有收件人都有证书且你也有自己的证书时，将使用 S/MIME 加密发送给他们的邮件。"
+        empty: "尚无证书。plMail 会保存每封签名验证通过的 S/MIME 邮件所使用的证书。"
+        verified: "由 %issuer% 确认"
+        unverified: "未经证书颁发机构确认"
+        confirm_remove: "移除此证书？在 plMail 发现新证书之前，无法使用 S/MIME 加密发送给此地址的邮件。"
+        changed_warning: "此地址出现了不同的证书，且没有证书颁发机构为此变更担保。在你与联系人核对指纹并接受新证书之前，plMail 会继续使用已知证书。"
+        removed: "证书已移除。"
+    import:
+        heading: "导入密钥"
+        hint: "粘贴公钥文本块或选择文件。该密钥会为其中列出的每个地址保存。"
+        file: "密钥文件"
+        paste: "公钥"
+        submit: "添加密钥"
+        done: "已导入。使用此密钥的地址：%count% 个。"
+        changed: "已导入，但其中 %count% 个地址已有不同的密钥。接受新密钥前，请核对下方指纹。"
+        unusable: "此密钥不可用：已撤销、已过期，或未列出任何地址。"
+        not_a_key: "这不是 OpenPGP 公钥。"
+        private_key: "这是私钥。此处仅用于导入联系人的公钥；你自己的密钥应放入上方的密钥环。"
+    lookup:
+        heading: "查找密钥"
+        hint: "向该地址所属域名查询密钥（Web Key Directory）。请求会通过此服务器发送。"
+        hint_keyservers: "先向该地址所属域名查询密钥（Web Key Directory），再查询密钥服务器 %servers%。请求会通过此服务器发送。"
+        email: "电子邮件地址"
+        submit: "查找"
+        found: "已在域名的密钥目录（WKD）中找到并保存密钥。"
+        found_keyserver: "已在密钥服务器 %host% 上找到并保存密钥。服务器仅验证了有人能接收此地址的邮件；标记为已验证前，请与联系人核对指纹。"
+        changed: "已在域名的密钥目录中找到密钥，但它与 plMail 已知的此地址密钥不同。接受前请核对指纹。"
+        changed_keyserver: "已在密钥服务器 %host% 上找到密钥，但它与 plMail 已知的此地址密钥不同。接受前请核对指纹。"
+        nothing: "该域名未发布此地址的可用密钥。"
+        nothing_keyservers: "该域名和密钥服务器均无此地址的可用密钥。"
+        invalid_address: "无法查找该地址。"
+        rate_limited: "连续查询次数过多。请几分钟后重试。"
+    key_servers:
+        label: "同时查询公共密钥服务器"
+        hint: "当地址所属域名没有密钥时，plMail 还会查询 %servers%。查询会让这些服务器知道你正在查找哪个地址。"
+    preferences:
+        heading: "此收件人的偏好设置"
+        hint: "发送加密邮件时使用。"
+        encrypt: "加密"
+        sign: "签名"
+        scheme: "格式"
+        save: "保存"
+        policy:
+            always: "始终"
+            auto: "自动"
+            never: "从不"
+        scheme_pgp-inline: "内联 PGP"
+        scheme_pgp-mime: "PGP/MIME"
+encryption:
+    decrypted:
+        heading: "此服务器上的解密邮件"
+        subheading: "默认关闭，可按账户选择开启。无论是否开启，邮件服务商仍无法读取你的加密邮件。"
+        forbidden: "此实例不保存解密邮件。你的加密邮件在服务器上会保持加密状态。"
+        state_on: "加密邮件会在浏览器中解密，并以可读形式保存在此处，以便搜索、包裹、日期和规则功能处理这些邮件。"
+        state_off: "加密邮件在此处保持加密状态：仅可搜索发件人和主题。"
+        confirm: "此账户的加密邮件解密后将保存在此 plMail 服务器上，搜索、包裹和日期功能即可处理这些邮件。任何能够访问服务器的人都可以阅读这些内容，邮件服务商仍无法读取。"
+        confirm_needed: "请勾选以确认你希望在此服务器上保存解密邮件。"
+        turn_on: "在此保存解密邮件"
+        turn_off: "停止并删除解密副本"
+        ai:
+            label: "也允许模型读取"
+            local: "使用此实例内部网络上的模型主机 %host% 进行分类、语义搜索和摘要。"
+            external: "模型主机 %host% 位于此实例的网络之外：解密邮件会被发送到该主机。"
+            no_model: "此实例尚未配置模型主机。"
+            consent: "我同意将此账户的解密邮件发送到 %host%。"
+            consent_needed: "请勾选以同意将解密邮件发送到模型主机。"
+            turn_on: "允许模型读取"
+            turn_off: "停止并删除模型生成的内容"
+    sending:
+        heading: "发送"
+        subheading: "plMail 支持加密后的邮件发送方式。发送给 plMail 已知密钥的收件人的邮件会自动加密。"
+        on: "开启"
+        off: "关闭"
+        autocrypt:
+            label: "在每封邮件中共享你的密钥"
+            hint: "不可见的 Autocrypt 标头会携带你的公钥，以便 Thunderbird、Delta Chat 等客户端发送加密回复。"
+        attach_key:
+            label: "附加你的公钥"
+            hint: "在每封邮件中以文件形式附加公钥，供不支持 Autocrypt 的邮件客户端使用。不使用 PGP 的收件人会看到一个他们不需要的附件。"
+        sign_plain:
+            label: "为未加密邮件签名"
+            hint: "不使用 PGP 的收件人会看到 signature.asc 附件。发送给 plMail 已知密钥的收件人的邮件，无论此设置如何都会签名。"
+        block_partial:
+            label: "无法向所有收件人加密发送时拒绝发送"
+            hint: "关闭时：邮件将以未加密形式发送给所有收件人，撰写窗口会显示提示。开启时：必须移除这些收件人或关闭此邮件的加密后才能发送。"
+        protect_subject:
+            label: "加密主题"
+            hint: "加密邮件的主题会放在加密内容中，外部仅显示“...”。Thunderbird 等客户端会显示真实主题；不支持的客户端会显示“...”。"
+    wkd:
+        heading: "Web Key Directory"
+        subheading: "在此实例自己的域名下发布你的公钥，以便 Thunderbird、Proton 和 GnuPG 根据地址找到它。"
+        disabled: "此实例未发布密钥。管理员可以开启此功能。"
+        no_addresses: "你的地址均不属于此实例发布密钥的域名（%domains%）。"
+        publish: "发布 %email% 的密钥"
+        url_advanced: "高级方式（openpgpkey 子域名）"
+        url_direct: "直接方式"
+        state:
+            published: "已发布。任何知道该地址的人都可以获取你的公钥。"
+            switched_off: "未发布：你已关闭发布。"
+            no_key: "尚无可发布的内容：此地址没有有效密钥。"
+            not_sign_in_address: "未发布：plMail 仅发布管理员为你分配的登录地址。"
+        check:
+            button: "从外部检查"
+            heading: "已分别通过两种方式从外部检查 %email%："
+            method:
+                advanced: "高级方式（openpgpkey.%domain%）"
+                direct: "直接方式（%domain%）"
+            result:
+                current: "找到了你的当前密钥"
+                outdated: "找到了密钥，但不是你当前的密钥；可能有其他服务器在响应该域名，或缓存中仍保留着旧密钥"
+                missing: "已响应，但没有此地址的密钥"
+                unreachable: "无法访问：域名无法解析，或连接或证书验证失败"
+            one_good: "先尝试另一种方式的邮件客户端仍可找到你的密钥，但也请修复那种方式，因为部分客户端只尝试一种方式。"
+            none_good: "两种方式都未提供你当前的密钥。域名可能尚未指向 plMail，请查看设置说明或联系管理员。"
+        setup:
+            heading: "设置域名（管理员）"
+            enable: "在 APP_WKD_DOMAINS 环境变量中填写域名，然后重启 plMail："
+            domains: "发布密钥的域名：%domains%。每个域名都需要通过以下两种方式之一连接到 plMail。"
+            advanced: "推荐使用高级方式：为 openpgpkey.%domain% 设置指向 %host% 的 DNS 记录，并在 plMail 服务器上配置该域名的 TLS 证书。"
+            direct: "直接方式：%domain% 的网站将 /.well-known/openpgpkey/ 下的所有请求转发到 plMail，并传递 Host 标头。"
+            check: "然后对你自己的地址使用“从外部检查”。检查实际从此服务器发起，因此如果某个域名在此处解析为私有地址，即使外部可以访问，也会报告缺失。"
+    devices:
+        empty: "尚无设备。"
+        heading: "已知设备"
+        last_used: "使用于"
+        remember: "记住此设备"
+        remove: "移除"
+        subheading: "这些浏览器可在密码重置后自行解锁你的密钥，无需恢复短语。"
+        this_device: "此设备"
+        unavailable: "此浏览器无法在这里保存设备密钥，需要 HTTPS 和网站存储。"
+    export:
+        file_name: "plmail-keys.asc"
+        heading: "导出密钥"
+        hint: "将所有私钥（包括旧私钥）导出为一个文件，供 GnuPG、Thunderbird 和 Proton 读取。"
+        passphrase: "文件口令"
+        submit: "导出"
+    failed: "操作失败。请重新加载页面后重试。"
+    import:
+        done: "已导入 %count% 个密钥。"
+        hardware_key: "此密钥的私密部分存储在智能卡或安全密钥中，浏览器无法使用。"
+        heading: "导入密钥"
+        hint: "从 GnuPG、Thunderbird 或 Proton 导出的、你已在使用的 OpenPGP 私钥。它会成为其中所列地址的密钥。"
+        no_match: "这些密钥均未列出你的任何地址。"
+        not_a_key: "这不是 OpenPGP 私钥。"
+        passphrase: "密钥口令"
+        submit: "导入"
+        wrong_passphrase: "该口令无法解锁此密钥。"
+    publish:
+        button: "发布到 %host%"
+        again: "重新发送确认链接"
+        refresh: "重新检查"
+        saved: "密钥服务器已响应，下方显示其返回的状态。"
+        confirm: "将此密钥发布到 %host%？之后任何人都可以通过 %addresses% 找到它。这会公开关联这些地址与密钥，而密钥服务器不会真正忘记该信息。%host% 会向每个地址发送确认链接，点击后才能通过地址查找到密钥。"
+        renewed: "你的旧密钥已发布到 %host%。也要在那里发布 %addresses% 的新密钥吗？%host% 会向每个地址发送链接，请你再次确认。"
+        state:
+            none: "%email% — 未在 %host% 上发布"
+            unpublished: "%email% — 已在 %host% 上，但尚无法通过此地址查找到"
+            pending: "%email% — 等待你确认：%host% 已向此地址发送确认链接"
+            published: "%email% — 已发布：任何人都可以在 %host% 上找到它"
+            revoked: "%email% — 已在 %host% 上撤销：服务器会提供已撤销的密钥"
+        unavailable: "无法发布到该密钥服务器：此实例未使用该服务器，或已在“联系人密钥”中关闭密钥服务器。"
+        not_active: "只能发布正在使用的密钥。"
+        not_found: "该密钥已不存在。"
+        not_published: "该密钥未在那里发布。"
+        failed: "无法连接密钥服务器，或服务器未接受该密钥。请稍后重试。"
+        not_a_revocation: "这不是此密钥的撤销证书。"
+    keys:
+        advanced: "显示密钥"
+        compromised: "标记为已泄露"
+        confirm_compromised: "将此密钥标记为已泄露？此密钥将不再使用，其地址会获得新密钥。"
+        confirm_renew: "为这些地址生成新密钥？旧密钥会保留，用于解密此前发给它的邮件。"
+        created: "创建于"
+        expires: "到期于"
+        heading: "密钥"
+        locked: "已锁定，请使用恢复短语解锁"
+        make_primary: "设为首选"
+        origin:
+            generated: "由 plMail 生成"
+            imported: "已导入"
+        primary: "首选"
+        renew: "更新密钥"
+        status:
+            active: "有效"
+            compromised: "已泄露"
+            obsolete: "已替换"
+        subheading: "你的地址所使用的 OpenPGP 密钥。可以导入已有密钥，也可以导出到其他地方使用。"
+    smime:
+        heading: "S/MIME 证书"
+        subheading: "由证书颁发机构或你的组织签发的证书，Outlook、Apple Mail 和 Thunderbird 均支持。当所有收件人都有证书，但并非所有收件人都有 OpenPGP 密钥时使用。"
+        empty: "尚无 S/MIME 证书。"
+        import_heading: "导入证书"
+        import_hint: "包含证书及其私钥的 .p12 或 .pfx 文件。文件会在此浏览器中打开，服务器仅保存加密后的密钥。"
+        file: "证书文件"
+        password: "文件密码"
+        import_submit: "导入证书"
+        imported: "已导入。现在可为 %addresses% 的邮件签名和解密。"
+        export_heading: "导出证书"
+        export_hint: "在此输入文件密码，然后点击上方证书旁的“导出”。"
+        export_password: "导出文件的密码"
+        export_password_missing: "请先为导出文件输入至少 8 个字符的密码。"
+        export: "导出为 .p12"
+        remove: "移除"
+        confirm_remove: "移除此证书及其私钥？之后将无法在此阅读使用该证书加密的邮件。"
+        valid_until: "有效期至"
+        expired: "已过期"
+        issued_by: "签发者"
+        retired: "已被较新的证书替换"
+        wrong_password: "该密码无法打开此文件。"
+        not_pkcs12: "这不是 .p12 或 .pfx 文件。"
+        legacy: "此文件使用 plMail 无法打开的旧加密方式（RC2 或 3DES）。请使用 AES 重新导出：OpenSSL 3 默认使用 AES，Windows 中请选择 AES-256 选项。"
+        not_rsa: "此处仅支持使用 RSA 密钥的证书。"
+        no_key: "文件中没有与其中任何证书匹配的私钥。"
+        no_match: "此证书不对应你的任何地址。"
+    nag:
+        action: "打开设置"
+        locked_keys: "密码重置后，你的部分旧密钥已锁定。"
+        recovered: "已从此设备重新解锁你的旧密钥。"
+    phrase:
+        create: "创建恢复短语"
+        download: "下载"
+        file_intro: "plMail 恢复短语。请将此文件妥善保存在安全的离线位置。下方文本块是你的密钥撤销证书。"
+        file_name: "plmail-recovery-phrase.txt"
+        heading: "恢复短语"
+        invalid: "这不是有效的十二个恢复词。请检查拼写。"
+        missing: "你尚未创建恢复短语。"
+        opens_nothing: "此短语无法解锁你的任何已锁定密钥。"
+        recover_heading: "解锁旧密钥"
+        recover_hint: "密码重置时，部分密钥被锁定。请输入恢复短语以重新解锁。"
+        recover_submit: "使用恢复短语解锁"
+        recovered: "已重新解锁 %count% 个密钥。"
+        recreate: "创建新的恢复短语"
+        saved: "恢复短语已设置。如果旧短语可能被他人看到，请创建新的短语。"
+        shown_once: "请立即记下这些词或下载保存，它们仅显示一次。任何持有这些词的人都可以解锁你的密钥。"
+        subheading: "十二个词，可在忘记密码时解锁你的密钥。没有它们，忘记密码也意味着失去加密邮件。"
+    passphrase:
+        heading: "加密口令"
+        subheading: "用于解锁密钥的口令。更改口令不会改变登录方式。"
+        current: "当前口令"
+        new: "新口令"
+        repeat: "再次输入新口令"
+        submit: "更改口令"
+        done: "口令已更改。今后请使用新口令。"
+    setup:
+        heading: "设置加密"
+        intro: "选择一个加密口令来保护你的密钥。每次会话中，首次需要密钥时会要求输入一次。它不是单点登录服务商的密码，且永远不会离开此浏览器。"
+        warning: "plMail 无法重置此口令。如果忘记，只有恢复短语（请在完成后立即创建）或此前使用过的浏览器能重新打开你的加密邮件。如果两者都没有，这些邮件将无法恢复。"
+        passphrase: "加密口令"
+        repeat: "再次输入口令"
+        submit: "设置加密"
+        too_short: "至少 %min% 个字符。"
+        mismatch: "两次输入的口令不一致。"
+        done: "加密已设置。接下来请创建恢复短语。"
+    status:
+        broken: "无法解锁你的密钥。请退出后重新登录；如果仍无法解决，管理员可在日志中查看原因。"
+        disabled: "此实例不支持。"
+        insecure: "需要 HTTPS。此页面通过明文 http:// 打开，浏览器在该环境中不提供自身的加密功能。请通过 https:// 地址打开 plMail。"
+        heading: "端到端加密"
+        key_count: "有效密钥：%keys% · 地址：%addresses%"
+        loading: "正在解锁你的密钥…"
+        locked: "此浏览器中的密钥已锁定。请输入密码解锁。"
+        locked_passphrase: "此浏览器中的密钥已锁定。请输入加密口令解锁。"
+        open: "已设置，且已在此浏览器中解锁。"
+        subheading: "只有你和通信对象能够阅读的邮件，此服务器和邮件服务商都无法阅读。"
+        unset: "尚未设置。你通过单点登录登录，因此密钥需要独立的口令，请在下方设置。"
+    unlock:
+        rate_limited: "尝试次数过多。请几分钟后重试。"
+        submit: "解锁"
+        wrong_password: "密码不正确。"
+    unlock_dialog:
+        heading: "解锁加密密钥"
+        password_intro: "此操作需要你的加密密钥。请输入密码解锁，本次会话中只需输入一次。"
+        passphrase_intro: "此操作需要你的加密密钥。请输入加密口令解锁，本次会话中只需输入一次。这不是单点登录服务商的密码。"
+        password_label: "密码"
+        passphrase_label: "加密口令"
+        wrong_passphrase: "该口令无法解锁你的密钥。"
+        cancel: "暂不"
+        submit: "解锁"
+password_required:
+    explanation: "你刚才登录所用的密码由他人设置。请设置一个只有你知道的密码，完成后才能进入 plMail。"
+    page_title: "设置你的密码"
+    sign_out: "退出登录"
+    submit: "保存并继续"
+    submitting: "正在保存…"
+    tagline: "还差一步"
