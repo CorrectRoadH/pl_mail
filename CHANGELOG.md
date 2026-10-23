@@ -7,6 +7,13 @@ The published image tags: `latest` follows the most recent release below,
 `main` follows the tip of the default branch, `milestone-vX.Y.Z` the work collected for that
 release before it reaches `main`, and `sha-…` pins one commit.
 
+## Unreleased
+
+**The interface is available in Simplified Chinese.** Choose **简体中文** during setup or under
+Settings → General → Language. Mail, calendar, settings, administration, sign-in errors and
+validation messages are translated. Following this language uses a 24-hour clock; an explicitly
+chosen clock format still takes precedence. No schema change.
+
 ## v0.3.8 — 2026-10-21
 
 **The image runs PHP 8.4.27, which fixes CVE-2026-109618 and CVE-2026-109619.** Every earlier
